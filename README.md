@@ -116,6 +116,7 @@ uv run pytest
 
 ## Project Docs
 
+- [Platform coverage](PLATFORMS.md)
 - [Security](SECURITY.md)
 - [Contributing](CONTRIBUTING.md)
 - [Disclaimer](DISCLAIMER.md)
