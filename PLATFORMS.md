@@ -4,7 +4,8 @@
 
 1. Automatic public routes for platforms with stable unauthenticated APIs.
 2. Generic browser-like HTTP fetching with TLS impersonation.
-3. `yt-dlp` metadata extraction for public media URLs.
+3. Non-browser content fallbacks through Jina Reader, RSS/Atom discovery, and metadata salvage.
+4. `yt-dlp` metadata extraction for public media URLs.
 
 This project does not bypass hard anti-abuse systems, login walls, paywalls, or IP bans.
 
@@ -58,6 +59,14 @@ Sites without a platform route still go through the normal fetch grid:
 - HTTP/1.1 curl fallback for some transport failures
 - response validation for challenges, rate limits, auth walls, JSON, and normal HTML
 
+## Content Fallbacks
+
+When public routes and the generic fetch grid do not produce a clean page, `unlimited-search` can still recover public content through:
+
+- Jina Reader JSON output (`data.content`) for markdown-like page text.
+- RSS/Atom discovery from Jina `external.alternate` and common origin feed paths.
+- OGP, JSON-LD, Schema.org, and Next.js text payload metadata from the last usable HTML response.
+
 ## Known Gaps
 
 These are intentionally not first-pass automatic parity:
@@ -65,7 +74,5 @@ These are intentionally not first-pass automatic parity:
 - Browser challenge solving with Playwright.
 - API-key, OAuth, or account-gated endpoints.
 - X/Twitter keyword search orchestration through a web search engine.
-- Generic RSS auto-discovery across arbitrary sites.
 - Archive.today and Google cache fallbacks.
-- Full structured extraction of OGP, JSON-LD, and Next.js payloads.
 - Hard anti-abuse bypasses such as TikTok IP bans or repeated 429 rate limits.

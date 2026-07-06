@@ -5,6 +5,7 @@ from collections import defaultdict
 from collections.abc import Sequence
 from urllib.parse import urlsplit
 
+from .content_fallbacks import try_content_fallbacks
 from .models import Attempt, FetchResult, ResponseEnvelope, TERMINAL_NONSUCCESS, Verdict
 from .public_routes import try_public_route
 from .transforms import identity_plan, interleave_attempts, iter_url_variants, referer_plan, referer_value
@@ -66,7 +67,7 @@ class UnlimitedSearchReader:
             identity_plan(preferred_identity),
             referer_plan(),
         )
-        if max_attempts > 0:
+        if max_attempts >= 0:
             plan = plan[:max_attempts]
 
         best_suspect: tuple[ResponseEnvelope, Attempt] | None = None
@@ -91,11 +92,19 @@ class UnlimitedSearchReader:
                 attempt.verdict = Verdict.UNSAFE_URL if attempt.error.startswith("unsafe_url:") else Verdict.UNKNOWN
                 trace.append(attempt)
                 if attempt.verdict in TERMINAL_NONSUCCESS:
-                    return _failure(
+                    failure = _failure(
                         trace,
                         last_response,
                         last_attempt or attempt,
                         stop_reason=attempt.verdict.value,
+                    )
+                    return _with_content_fallback(
+                        failure,
+                        url,
+                        self.transport,
+                        timeout=timeout,
+                        max_content_chars=max_content_chars,
+                        last_response=last_response,
                     )
                 continue
 
@@ -126,14 +135,37 @@ class UnlimitedSearchReader:
             if validation.verdict == Verdict.SUSPECT_OK and best_suspect is None:
                 best_suspect = (response, attempt)
             if validation.verdict in TERMINAL_NONSUCCESS:
-                return _failure(trace, response, attempt, stop_reason=validation.verdict.value)
+                failure = _failure(trace, response, attempt, stop_reason=validation.verdict.value)
+                return _with_content_fallback(
+                    failure,
+                    url,
+                    self.transport,
+                    timeout=timeout,
+                    max_content_chars=max_content_chars,
+                    last_response=response,
+                )
 
         if best_suspect is not None:
             response, attempt = best_suspect
             failure = _failure(trace, response, attempt, stop_reason="suspect_only")
             failure.content = _trim(response.text, max_content_chars)
-            return failure
-        return _failure(trace, last_response, last_attempt, stop_reason="exhausted")
+            return _with_content_fallback(
+                failure,
+                url,
+                self.transport,
+                timeout=timeout,
+                max_content_chars=max_content_chars,
+                last_response=response,
+            )
+        failure = _failure(trace, last_response, last_attempt, stop_reason="exhausted")
+        return _with_content_fallback(
+            failure,
+            url,
+            self.transport,
+            timeout=timeout,
+            max_content_chars=max_content_chars,
+            last_response=last_response,
+        )
 
     def read_public_urls(self, urls: Sequence[str], **kwargs: object) -> list[FetchResult]:
         grouped: dict[str, list[str]] = defaultdict(list)
@@ -173,6 +205,61 @@ def _failure(
         trace=trace,
         stop_reason=stop_reason,
         untried_routes=untried_routes,
+    )
+
+
+def _with_content_fallback(
+    failure: FetchResult,
+    original_url: str,
+    transport: PublicTransport,
+    *,
+    timeout: int,
+    max_content_chars: int | None,
+    last_response: ResponseEnvelope | None,
+) -> FetchResult:
+    if failure.stop_reason in {Verdict.AUTH_REQUIRED.value, Verdict.NOT_FOUND.value, Verdict.UNSAFE_URL.value}:
+        return failure
+
+    fallback = try_content_fallbacks(
+        original_url,
+        transport,
+        timeout=min(timeout, 25),
+        max_content_chars=max_content_chars,
+        last_response=last_response,
+    )
+    if fallback is None:
+        return failure
+
+    trace = list(failure.trace)
+    last_attempt = fallback.attempts[-1] if fallback.attempts else None
+    trace.append(
+        Attempt(
+            phase="content_fallback",
+            executor=fallback.route,
+            url=fallback.source_url,
+            status=last_attempt.status if last_attempt else 0,
+            body_size=len(fallback.content.encode("utf-8", "ignore")),
+            verdict=Verdict.STRONG_OK,
+            reasons=["content_fallback"],
+        )
+    )
+    return FetchResult(
+        ok=True,
+        content=fallback.content,
+        final_url=fallback.source_url,
+        verdict=Verdict.STRONG_OK,
+        summary=f"content fallback succeeded: {fallback.route}",
+        trace=trace,
+        stop_reason="success",
+        untried_routes=[],
+        metadata={
+            "platform": "content-fallback",
+            "route": fallback.route,
+            "source_url": fallback.source_url,
+            "content_type": fallback.content_type,
+            "fallback_attempts": [attempt.to_dict() for attempt in fallback.attempts],
+            **fallback.metadata,
+        },
     )
 
 

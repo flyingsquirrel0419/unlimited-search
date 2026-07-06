@@ -114,6 +114,8 @@ uv run pytest
 - `diagnose_access`
 - `extract_media`
 
+Reads use public routes first, then a browser-like HTTP grid, then non-browser content fallbacks such as Jina Reader, RSS/Atom discovery, and metadata salvage.
+
 ## Project Docs
 
 - [Platform coverage](PLATFORMS.md)
