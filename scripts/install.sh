@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 set -eu
 
-REPO="${UNLIMITED_SEARCH_REPO:-git@github.com:flyingsquirrel0419/unlimited-search.git}"
+REPO="${UNLIMITED_SEARCH_REPO:-https://github.com/flyingsquirrel0419/unlimited-search.git}"
 HOME_DIR="${UNLIMITED_SEARCH_HOME:-$HOME/.unlimited-search}"
 BIN_DIR="${UNLIMITED_SEARCH_BIN:-$HOME/.local/bin}"
 BIN="$BIN_DIR/unlimited-search"

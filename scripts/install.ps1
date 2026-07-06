@@ -4,7 +4,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$Repo = if ($env:UNLIMITED_SEARCH_REPO) { $env:UNLIMITED_SEARCH_REPO } else { "git@github.com:flyingsquirrel0419/unlimited-search.git" }
+$Repo = if ($env:UNLIMITED_SEARCH_REPO) { $env:UNLIMITED_SEARCH_REPO } else { "https://github.com/flyingsquirrel0419/unlimited-search.git" }
 $HomeDir = if ($env:UNLIMITED_SEARCH_HOME) { $env:UNLIMITED_SEARCH_HOME } else { Join-Path $HOME ".unlimited-search" }
 $BinDir = if ($env:UNLIMITED_SEARCH_BIN) { $env:UNLIMITED_SEARCH_BIN } else { Join-Path $HOME ".local\bin" }
 $Bin = Join-Path $BinDir "unlimited-search.ps1"

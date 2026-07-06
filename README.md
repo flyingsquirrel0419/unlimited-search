@@ -26,19 +26,31 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
 
 Install `unlimited-search`.
 
+Because this repository is private, install commands need a GitHub token with repository read access.
+
 macOS / Linux:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/flyingsquirrel0419/unlimited-search/main/scripts/install.sh | sh
+curl -fsSL \
+  -H "Authorization: Bearer $GITHUB_TOKEN" \
+  -H "Accept: application/vnd.github.raw" \
+  https://api.github.com/repos/flyingsquirrel0419/unlimited-search/contents/scripts/install.sh | sh
 ```
 
 Windows PowerShell:
 
 ```powershell
-powershell -ExecutionPolicy ByPass -c "irm https://raw.githubusercontent.com/flyingsquirrel0419/unlimited-search/main/scripts/install.ps1 | iex"
+powershell -ExecutionPolicy ByPass -c "$h=@{Authorization='Bearer '+$env:GITHUB_TOKEN;Accept='application/vnd.github.raw'}; irm -Headers $h https://api.github.com/repos/flyingsquirrel0419/unlimited-search/contents/scripts/install.ps1 | iex"
 ```
 
-For a private repository, raw GitHub install URLs require an authenticated environment. Clone-based install is the reliable private-repo path.
+Alternatively, with GitHub CLI:
+
+```bash
+gh repo clone flyingsquirrel0419/unlimited-search ~/.unlimited-search
+cd ~/.unlimited-search
+uv sync --no-dev
+scripts/install.sh update
+```
 
 ## Commands
 
