@@ -1,0 +1,44 @@
+name: Feature request
+description: Suggest a public-content route, tool, fallback, or usability improvement.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What should unlimited-search handle better?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: What should change?
+    validations:
+      required: true
+  - type: textarea
+    id: examples
+    attributes:
+      label: Public examples
+      description: Provide public URLs or site classes that demonstrate the need.
+      placeholder: "Public URL examples only."
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Public route
+        - Transport fallback
+        - Validator
+        - MCP tool
+        - Installer
+        - Documentation
+        - Other
+  - type: checkboxes
+    id: boundary
+    attributes:
+      label: Boundary check
+      options:
+        - label: This request is for public content and does not require bypassing authentication, paywalls, CAPTCHA, or private access controls.
+          required: true

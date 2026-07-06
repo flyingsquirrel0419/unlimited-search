@@ -1,0 +1,193 @@
+from __future__ import annotations
+
+import time
+from collections import defaultdict
+from collections.abc import Sequence
+from urllib.parse import urlsplit
+
+from .models import Attempt, FetchResult, ResponseEnvelope, TERMINAL_NONSUCCESS, Verdict
+from .public_routes import try_public_route
+from .transforms import identity_plan, interleave_attempts, iter_url_variants, referer_plan, referer_value
+from .transport import PublicTransport
+from .validators import validate_response
+
+
+class UnlimitedSearchReader:
+    def __init__(self, *, allow_private: bool = False) -> None:
+        self.transport = PublicTransport(allow_private=allow_private)
+
+    def read_public_url(
+        self,
+        url: str,
+        *,
+        success_selectors: Sequence[str] | None = None,
+        timeout: int = 25,
+        max_attempts: int = 12,
+        enable_public_routes: bool = True,
+        preferred_identity: str | None = None,
+        max_content_chars: int | None = None,
+    ) -> FetchResult:
+        trace: list[Attempt] = []
+
+        if enable_public_routes:
+            route_result = try_public_route(url, self.transport, timeout=min(timeout, 25))
+            if route_result is not None:
+                for route_attempt in route_result.attempts:
+                    trace.append(
+                        Attempt(
+                            phase="public_route",
+                            executor=route_attempt.route,
+                            url=url,
+                            status=route_attempt.status,
+                            body_size=route_attempt.bytes,
+                            verdict=Verdict.STRONG_OK if route_attempt.ok else Verdict.BLOCKED,
+                            reasons=[route_attempt.note] if route_attempt.note else [],
+                        )
+                    )
+                if route_result.ok:
+                    content = _trim(route_result.content, max_content_chars)
+                    return FetchResult(
+                        ok=True,
+                        content=content,
+                        final_url=route_result.final_url,
+                        verdict=Verdict.STRONG_OK,
+                        summary=f"public route succeeded: {route_result.platform}:{route_result.route}",
+                        trace=trace,
+                        stop_reason="success",
+                        metadata={
+                            "platform": route_result.platform,
+                            "route": route_result.route,
+                            **route_result.metadata,
+                        },
+                    )
+
+        plan = interleave_attempts(
+            iter_url_variants(url),
+            identity_plan(preferred_identity),
+            referer_plan(),
+        )
+        if max_attempts > 0:
+            plan = plan[:max_attempts]
+
+        best_suspect: tuple[ResponseEnvelope, Attempt] | None = None
+        last_response: ResponseEnvelope | None = None
+        last_attempt: Attempt | None = None
+
+        for transform_name, target_url, identity, referer_strategy in plan:
+            started = time.monotonic()
+            ref = referer_value(referer_strategy, target_url)
+            result = self.transport.get(target_url, identity=identity, referer=ref, timeout=timeout)
+            attempt = Attempt(
+                phase="grid",
+                executor="curl_cffi" if identity else "http",
+                url=target_url,
+                url_transform=transform_name,
+                identity=identity,
+                referer=referer_strategy,
+                elapsed_ms=result.elapsed_ms or int((time.monotonic() - started) * 1000),
+            )
+            if result.error or result.response is None:
+                attempt.error = result.error or "no_response"
+                attempt.verdict = Verdict.UNSAFE_URL if attempt.error.startswith("unsafe_url:") else Verdict.UNKNOWN
+                trace.append(attempt)
+                if attempt.verdict in TERMINAL_NONSUCCESS:
+                    return _failure(
+                        trace,
+                        last_response,
+                        last_attempt or attempt,
+                        stop_reason=attempt.verdict.value,
+                    )
+                continue
+
+            response = result.response
+            attempt.executor = _transport_name(response)
+            validation = validate_response(
+                response,
+                success_selectors=success_selectors,
+            )
+            attempt.status = validation.status
+            attempt.body_size = validation.body_size
+            attempt.verdict = validation.verdict
+            attempt.reasons = list(validation.reasons)
+            trace.append(attempt)
+            last_response = response
+            last_attempt = attempt
+
+            if validation.ok:
+                return FetchResult(
+                    ok=True,
+                    content=_trim(response.text, max_content_chars),
+                    final_url=response.url or target_url,
+                    verdict=validation.verdict,
+                    summary=f"{identity} + {transform_name} + referer:{referer_strategy} -> {validation.verdict.value}",
+                    trace=trace,
+                    stop_reason="success",
+                )
+            if validation.verdict == Verdict.SUSPECT_OK and best_suspect is None:
+                best_suspect = (response, attempt)
+            if validation.verdict in TERMINAL_NONSUCCESS:
+                return _failure(trace, response, attempt, stop_reason=validation.verdict.value)
+
+        if best_suspect is not None:
+            response, attempt = best_suspect
+            failure = _failure(trace, response, attempt, stop_reason="suspect_only")
+            failure.content = _trim(response.text, max_content_chars)
+            return failure
+        return _failure(trace, last_response, last_attempt, stop_reason="exhausted")
+
+    def read_public_urls(self, urls: Sequence[str], **kwargs: object) -> list[FetchResult]:
+        grouped: dict[str, list[str]] = defaultdict(list)
+        for url in urls:
+            grouped[_host(url)].append(url)
+        results: list[FetchResult] = []
+        for host_urls in grouped.values():
+            for url in host_urls:
+                results.append(self.read_public_url(url, **kwargs))
+        return results
+
+    def diagnose_access(self, url: str, **kwargs: object) -> FetchResult:
+        kwargs.setdefault("max_content_chars", 2000)
+        return self.read_public_url(url, **kwargs)
+
+
+def _failure(
+    trace: list[Attempt],
+    response: ResponseEnvelope | None,
+    attempt: Attempt | None,
+    *,
+    stop_reason: str,
+) -> FetchResult:
+    content = response.text if response is not None else ""
+    final_url = response.url if response is not None else (attempt.url if attempt else "")
+    verdict = attempt.verdict if attempt else Verdict.UNKNOWN
+    untried_routes: list[str] = []
+    if stop_reason not in {Verdict.AUTH_REQUIRED.value, Verdict.NOT_FOUND.value, Verdict.UNSAFE_URL.value}:
+        untried_routes.append("browser_fallback: run with a Playwright-capable client if the page requires JavaScript challenge resolution")
+        untried_routes.append("api_discovery: inspect browser network traffic for public JSON/rss/graphql endpoints")
+    return FetchResult(
+        ok=False,
+        content=content,
+        final_url=final_url,
+        verdict=verdict,
+        summary=f"failed after {len(trace)} attempts; stop={stop_reason}",
+        trace=trace,
+        stop_reason=stop_reason,
+        untried_routes=untried_routes,
+    )
+
+
+def _trim(text: str, max_chars: int | None) -> str:
+    if max_chars is None or len(text) <= max_chars:
+        return text
+    return text[:max_chars]
+
+
+def _host(url: str) -> str:
+    return (urlsplit(url).hostname or "").lower()
+
+
+def _transport_name(response: ResponseEnvelope) -> str:
+    for key, value in response.headers.items():
+        if key.lower() == "x-unlimited-search-transport":
+            return value
+    return "curl_cffi"

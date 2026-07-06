@@ -1,0 +1,68 @@
+name: Bug report
+description: Report incorrect behavior, a crash, or a false success/failure.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. Do not include credentials, cookies, private URLs, or personal data.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What happened?
+    validations:
+      required: true
+  - type: input
+    id: url_class
+    attributes:
+      label: URL or site class
+      description: Use a public example URL when possible. If sensitive, describe the site class instead.
+      placeholder: "https://example.com or Google Scholar / TikTok profile / Reddit post"
+  - type: dropdown
+    id: issue_type
+    attributes:
+      label: Issue type
+      options:
+        - False failure
+        - False success
+        - Timeout
+        - Crash
+        - Install/update problem
+        - MCP client config problem
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+      render: bash
+      placeholder: |
+        uv run unlimited-search read https://example.com --max-attempts 1
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Output or trace
+      description: Paste relevant output. Remove secrets, cookies, tokens, and private data.
+      render: text
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      placeholder: "0.1.0 / commit SHA"
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: "macOS 15, Ubuntu 24.04, Windows 11, Python 3.12, uv version"
+  - type: checkboxes
+    id: boundary
+    attributes:
+      label: Boundary check
+      options:
+        - label: This report does not ask to bypass login, paywall, CAPTCHA, or private access controls.
+          required: true

@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security issue
+    url: https://github.com/flyingsquirrel0419/unlimited-search/security/advisories/new
+    about: Please report vulnerabilities privately.
