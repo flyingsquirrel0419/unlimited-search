@@ -131,34 +131,53 @@ class PublicTransport:
 
     def _http1_cli_fallback(self, url: str, *, headers: dict[str, str], timeout: int) -> TransportResult:
         started = time.monotonic()
-        ok, reason = classify_url(url, allow_private=self.allow_private)
-        if not ok:
-            return TransportResult(None, f"unsafe_url:{reason}", _elapsed(started))
         fallback_headers = dict(headers)
         fallback_headers["User-Agent"] = _user_agent("chrome")
         fallback_headers.setdefault("Accept-Language", "en-US,en;q=0.9")
         fallback_timeout = max(timeout, 35)
-        cmd = ["curl", "--http1.1", "-L", "-sS", "-i", "--max-time", str(fallback_timeout), url]
-        for key in ("User-Agent", "Accept", "Accept-Language"):
-            value = fallback_headers.get(key)
-            if value:
-                cmd[1:1] = ["-H", f"{key}: {value}"]
-        try:
-            proc = subprocess.run(cmd, text=False, capture_output=True, timeout=fallback_timeout + 5)
-        except FileNotFoundError:
-            return TransportResult(None, "curl_not_available", _elapsed(started))
-        except subprocess.TimeoutExpired:
-            return TransportResult(None, f"timeout:{fallback_timeout}s", _elapsed(started))
-        raw = proc.stdout or b""
-        if not raw:
-            err = (proc.stderr or b"").decode("utf-8", "replace")[:240]
-            return TransportResult(None, err or f"curl_exit:{proc.returncode}", _elapsed(started))
-        try:
-            response = _parse_curl_include_response(raw, url)
-        except Exception as exc:
-            return TransportResult(None, f"parse_error:{type(exc).__name__}:{str(exc)[:160]}", _elapsed(started))
-        response.headers.setdefault("x-unlimited-search-transport", "curl_http1_cli")
-        return TransportResult(response, None, _elapsed(started))
+        current = url
+
+        for _ in range(self.max_redirects + 1):
+            ok, reason = classify_url(current, allow_private=self.allow_private)
+            if not ok:
+                return TransportResult(None, f"unsafe_url:{reason}", _elapsed(started))
+
+            cmd = ["curl", "--http1.1", "-sS", "-i", "--max-time", str(fallback_timeout), current]
+            for key in ("User-Agent", "Accept", "Accept-Language"):
+                value = fallback_headers.get(key)
+                if value:
+                    cmd[1:1] = ["-H", f"{key}: {value}"]
+            try:
+                proc = subprocess.run(cmd, text=False, capture_output=True, timeout=fallback_timeout + 5)
+            except FileNotFoundError:
+                return TransportResult(None, "curl_not_available", _elapsed(started))
+            except subprocess.TimeoutExpired:
+                return TransportResult(None, f"timeout:{fallback_timeout}s", _elapsed(started))
+            raw = proc.stdout or b""
+            if not raw:
+                err = (proc.stderr or b"").decode("utf-8", "replace")[:240]
+                return TransportResult(None, err or f"curl_exit:{proc.returncode}", _elapsed(started))
+            try:
+                response = _parse_curl_include_response(raw, current)
+            except Exception as exc:
+                return TransportResult(None, f"parse_error:{type(exc).__name__}:{str(exc)[:160]}", _elapsed(started))
+
+            if response.status_code in {301, 302, 303, 307, 308}:
+                location = _header_get(response.headers, "location")
+                if not location:
+                    response.headers.setdefault("x-unlimited-search-transport", "curl_http1_cli")
+                    return TransportResult(response, None, _elapsed(started))
+                next_url = resolve_redirect(current, location)
+                ok, reason = classify_url(next_url, allow_private=self.allow_private)
+                if not ok:
+                    return TransportResult(None, f"unsafe_redirect:{reason}", _elapsed(started))
+                current = next_url
+                continue
+
+            response.headers.setdefault("x-unlimited-search-transport", "curl_http1_cli")
+            return TransportResult(response, None, _elapsed(started))
+
+        return TransportResult(None, "too_many_redirects", _elapsed(started))
 
 
 def _from_curl_response(response: Any) -> ResponseEnvelope:

@@ -9,6 +9,7 @@ from .archive_fallbacks import try_archive_fallback
 from .content_fallbacks import try_content_fallbacks
 from .models import Attempt, FetchResult, ResponseEnvelope, TERMINAL_NONSUCCESS, Verdict
 from .public_routes import try_public_route
+from .safety import classify_url
 from .transforms import identity_plan, interleave_attempts, iter_url_variants, referer_plan, referer_value
 from .transport import PublicTransport
 from .validators import validate_response
@@ -30,6 +31,18 @@ class UnlimitedSearchReader:
         max_content_chars: int | None = None,
     ) -> FetchResult:
         trace: list[Attempt] = []
+        ok, reason = classify_url(url, allow_private=getattr(self.transport, "allow_private", False))
+        if not ok:
+            attempt = Attempt(
+                phase="safety",
+                executor="classify_url",
+                url=url,
+                verdict=Verdict.UNSAFE_URL,
+                reasons=[reason],
+                error=f"unsafe_url:{reason}",
+            )
+            trace.append(attempt)
+            return _failure(trace, None, attempt, stop_reason=Verdict.UNSAFE_URL.value)
 
         if enable_public_routes:
             route_result = try_public_route(url, self.transport, timeout=min(timeout, 25))

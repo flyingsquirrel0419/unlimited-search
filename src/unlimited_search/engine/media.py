@@ -5,6 +5,8 @@ import subprocess
 from dataclasses import dataclass, field
 from typing import Any
 
+from .safety import classify_url
+
 
 @dataclass(slots=True)
 class MediaResult:
@@ -23,6 +25,10 @@ class MediaResult:
 
 
 def extract_media_metadata(url: str, *, timeout: int = 90) -> MediaResult:
+    ok, reason = classify_url(url)
+    if not ok:
+        return MediaResult(False, url, error=f"unsafe_url:{reason}")
+
     try:
         proc = subprocess.run(
             ["yt-dlp", "--dump-json", "--skip-download", "--no-warnings", url],
@@ -67,4 +73,3 @@ def extract_media_metadata(url: str, *, timeout: int = 90) -> MediaResult:
     if automatic_captions:
         metadata["automatic_caption_languages"] = sorted(automatic_captions)
     return MediaResult(True, url, metadata=metadata)
-
