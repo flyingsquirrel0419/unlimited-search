@@ -29,6 +29,9 @@ body:
       label: Area
       options:
         - Public route
+        - Content fallback
+        - RSS/Atom discovery
+        - Metadata extraction
         - Transport fallback
         - Validator
         - MCP tool

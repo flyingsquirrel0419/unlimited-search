@@ -1,6 +1,6 @@
 # Platform Coverage
 
-`unlimited-search` uses three layers:
+`unlimited-search` uses four layers:
 
 1. Automatic public routes for platforms with stable unauthenticated APIs.
 2. Generic browser-like HTTP fetching with TLS impersonation.
@@ -67,11 +67,35 @@ When public routes and the generic fetch grid do not produce a clean page, `unli
 - RSS/Atom discovery from Jina `external.alternate` and common origin feed paths.
 - OGP, JSON-LD, Schema.org, and Next.js text payload metadata from the last usable HTML response.
 
+Fallback success is reported as:
+
+- `metadata.platform = "content-fallback"`
+- `metadata.route = "jina-json"`, `"rss-discovery"`, or `"metadata-salvage"`
+- `metadata.content_type = "markdown"`, `"feed_json"`, or `"metadata_json"`
+
+`--max-attempts 0` skips the generic HTTP grid and is useful for fallback smoke tests.
+
+## Representative Smoke Tests
+
+```bash
+# Public route
+uv run unlimited-search read https://en.wikipedia.org/wiki/OpenAI --max-content-chars 300
+
+# Jina Reader fallback
+uv run unlimited-search read https://example.com --no-public-routes --max-attempts 0 --max-content-chars 300
+
+# RSS/Atom discovery fallback
+uv run unlimited-search read https://xkcd.com/not-a-real-page --no-public-routes --max-attempts 0 --max-content-chars 300
+
+# Media metadata
+uv run unlimited-search read https://vimeo.com/76979871 --max-content-chars 300
+```
+
 ## Known Gaps
 
 These are intentionally not first-pass automatic parity:
 
-- Browser challenge solving with Playwright.
+- Browser challenge solving or direct browser execution with Playwright.
 - API-key, OAuth, or account-gated endpoints.
 - X/Twitter keyword search orchestration through a web search engine.
 - Archive.today and Google cache fallbacks.

@@ -29,6 +29,8 @@ body:
         - False success
         - Timeout
         - Crash
+        - Incorrect public route
+        - Incorrect content fallback
         - Install/update problem
         - MCP client config problem
         - Other
@@ -41,6 +43,7 @@ body:
       render: bash
       placeholder: |
         uv run unlimited-search read https://example.com --max-attempts 1
+        uv run unlimited-search diagnose https://example.com
     validations:
       required: true
   - type: textarea
@@ -49,6 +52,12 @@ body:
       label: Output or trace
       description: Paste relevant output. Remove secrets, cookies, tokens, and private data.
       render: text
+  - type: input
+    id: route
+    attributes:
+      label: Route or fallback
+      description: If visible, include metadata.platform, metadata.route, or the summary line.
+      placeholder: "content-fallback/rss-discovery or github/repo"
   - type: input
     id: version
     attributes:

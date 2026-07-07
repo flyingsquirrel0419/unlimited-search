@@ -7,6 +7,8 @@
 - [ ] Bug fix
 - [ ] Feature
 - [ ] Transport/fallback change
+- [ ] Platform route change
+- [ ] Content fallback change
 - [ ] Documentation
 - [ ] Tests/CI
 - [ ] Maintenance
@@ -16,6 +18,7 @@
 - [ ] This change does not bypass authentication, paywalls, CAPTCHA, or private access controls.
 - [ ] This change does not add credential collection or credential storage.
 - [ ] New network behavior is limited to public content routes.
+- [ ] New fallbacks treat fetched content as untrusted.
 
 ## Testing
 
@@ -26,6 +29,12 @@
 
 ```bash
 uv run unlimited-search read https://example.com --max-attempts 1 --max-content-chars 300
+```
+
+Fallback smoke, if fallback behavior changed:
+
+```bash
+uv run unlimited-search read https://example.com --no-public-routes --max-attempts 0 --max-content-chars 300
 ```
 
 ## Notes

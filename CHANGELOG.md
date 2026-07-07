@@ -13,3 +13,4 @@ All notable changes to `unlimited-search` will be documented here.
 - Added HTTP/1.1 curl fallback for timeout and HTTP/2 failure cases.
 - Added SSRF checks for private, loopback, link-local, and metadata redirects.
 - Added install/update/uninstall scripts for macOS, Linux, and Windows PowerShell.
+- Refreshed user docs, platform coverage, troubleshooting guidance, MCP config notes, and GitHub templates.

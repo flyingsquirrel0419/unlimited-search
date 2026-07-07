@@ -8,8 +8,12 @@ The tool may fetch:
 
 - URLs provided by the MCP client
 - public route variants such as feeds or metadata endpoints
+- content fallback URLs through Jina Reader (`r.jina.ai`)
+- RSS/Atom feed candidates on the same public origin
 - media metadata through `yt-dlp`
 
 The tool may return fetched page content to the MCP client that invoked it. Treat returned web content as untrusted.
 
 Do not provide credentials, private URLs, tokens, session cookies, or personal data unless you understand where your MCP client sends tool results.
+
+The project does not operate a central telemetry or download-tracking service by default.

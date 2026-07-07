@@ -29,10 +29,13 @@ The project should:
 - avoid storing credentials
 - avoid logging secrets or full private URLs unnecessarily
 - stop at authentication and paywall walls
+- treat fetched HTML, JSON, RSS, and metadata as untrusted content
+- keep fallback providers limited to public, unauthenticated content routes
 
 ## Out of Scope
 
 - bypassing logins, paywalls, or CAPTCHA challenges
 - scraping private or access-controlled content
+- bypassing hard anti-abuse systems, IP bans, or rate limits
 - denial-of-service reports based only on intentionally excessive request volume
 - issues requiring stolen credentials or compromised local machines
