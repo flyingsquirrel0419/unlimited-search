@@ -81,7 +81,3 @@ The MCP server exposes:
 - `metadata.fallback_verdict` to distinguish recovered content from direct strong reads
 
 `diagnose_access` omits full content and is better for debugging blocked, challenged, or rate-limited URLs.
-
-## Private Repository Install
-
-For private installs, set `GITHUB_TOKEN` before using the curl installer. The token needs read access to the repository.
