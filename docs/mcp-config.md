@@ -74,7 +74,10 @@ The MCP server exposes:
 - `diagnose_access`
 - `extract_media`
 
-`read_public_url` and `read_public_urls` return content, verdict, trace, and metadata. If direct access fails, results may include `metadata.platform = "content-fallback"` with route details such as `jina-json`, `rss-discovery`, or `metadata-salvage`.
+`read_public_url` and `read_public_urls` return content, verdict, trace, and metadata. If direct access fails, results may include:
+
+- `metadata.platform = "content-fallback"` with routes such as `jina-json`, `rss-discovery`, or `metadata-salvage`
+- `metadata.platform = "archive-fallback"` with routes such as `wayback-available`, `wayback-latest`, `wayback-cdx`, or `archive-today`
 
 `diagnose_access` omits full content and is better for debugging blocked, challenged, or rate-limited URLs.
 

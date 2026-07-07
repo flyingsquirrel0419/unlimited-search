@@ -1,6 +1,6 @@
 # unlimited-search
 
-Python MCP server and CLI for reading public web content through public-only routes, browser-like HTTP identities, non-browser content fallbacks, and media metadata extraction.
+Python MCP server and CLI for reading public web content through public-only routes, browser-like HTTP identities, non-browser content fallbacks, public archive fallbacks, and media metadata extraction.
 
 `unlimited-search` is public-content tooling. It is not intended to bypass logins, paywalls, CAPTCHA, private networks, or access controls.
 
@@ -15,7 +15,12 @@ Python MCP server and CLI for reading public web content through public-only rou
    - RSS/Atom discovery through Jina `external.alternate`
    - common origin feed paths such as `/feed`, `/rss`, `/atom.xml`
    - OGP, JSON-LD, Schema.org, and Next.js payload metadata salvage
-4. `yt-dlp` metadata extraction for known public media hosts.
+4. Public archive fallbacks:
+   - Wayback Available API
+   - Wayback latest/direct snapshot
+   - Wayback CDX latest 200 snapshot
+   - archive.today/archive.ph best-effort snapshots
+5. `yt-dlp` metadata extraction for known public media hosts.
 
 See [Platform coverage](PLATFORMS.md) for the current support matrix and known gaps.
 
@@ -151,6 +156,9 @@ uv run unlimited-search read https://example.com --no-public-routes --max-attemp
 
 # RSS fallback smoke
 uv run unlimited-search read https://xkcd.com/not-a-real-page --no-public-routes --max-attempts 0 --max-content-chars 300
+
+# Archive fallback smoke
+uv run unlimited-search read http://www.whitehouse.gov/1600/presidents/barackobama --no-public-routes --max-attempts 1 --max-content-chars 300
 
 # Full test suite
 uv run pytest

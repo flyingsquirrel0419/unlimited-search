@@ -5,6 +5,7 @@ from collections import defaultdict
 from collections.abc import Sequence
 from urllib.parse import urlsplit
 
+from .archive_fallbacks import try_archive_fallback
 from .content_fallbacks import try_content_fallbacks
 from .models import Attempt, FetchResult, ResponseEnvelope, TERMINAL_NONSUCCESS, Verdict
 from .public_routes import try_public_route
@@ -98,7 +99,7 @@ class UnlimitedSearchReader:
                         last_attempt or attempt,
                         stop_reason=attempt.verdict.value,
                     )
-                    return _with_content_fallback(
+                    return _with_recovery_fallbacks(
                         failure,
                         url,
                         self.transport,
@@ -136,7 +137,7 @@ class UnlimitedSearchReader:
                 best_suspect = (response, attempt)
             if validation.verdict in TERMINAL_NONSUCCESS:
                 failure = _failure(trace, response, attempt, stop_reason=validation.verdict.value)
-                return _with_content_fallback(
+                return _with_recovery_fallbacks(
                     failure,
                     url,
                     self.transport,
@@ -149,7 +150,7 @@ class UnlimitedSearchReader:
             response, attempt = best_suspect
             failure = _failure(trace, response, attempt, stop_reason="suspect_only")
             failure.content = _trim(response.text, max_content_chars)
-            return _with_content_fallback(
+            return _with_recovery_fallbacks(
                 failure,
                 url,
                 self.transport,
@@ -158,7 +159,7 @@ class UnlimitedSearchReader:
                 last_response=response,
             )
         failure = _failure(trace, last_response, last_attempt, stop_reason="exhausted")
-        return _with_content_fallback(
+        return _with_recovery_fallbacks(
             failure,
             url,
             self.transport,
@@ -208,7 +209,7 @@ def _failure(
     )
 
 
-def _with_content_fallback(
+def _with_recovery_fallbacks(
     failure: FetchResult,
     original_url: str,
     transport: PublicTransport,
@@ -217,48 +218,96 @@ def _with_content_fallback(
     max_content_chars: int | None,
     last_response: ResponseEnvelope | None,
 ) -> FetchResult:
-    if failure.stop_reason in {Verdict.AUTH_REQUIRED.value, Verdict.NOT_FOUND.value, Verdict.UNSAFE_URL.value}:
+    if failure.stop_reason in {Verdict.AUTH_REQUIRED.value, Verdict.UNSAFE_URL.value}:
         return failure
 
-    fallback = try_content_fallbacks(
+    if failure.stop_reason != Verdict.NOT_FOUND.value:
+        fallback = try_content_fallbacks(
+            original_url,
+            transport,
+            timeout=min(timeout, 25),
+            max_content_chars=max_content_chars,
+            last_response=last_response,
+        )
+        if fallback is not None:
+            return _fallback_fetch_result(
+                failure,
+                platform="content-fallback",
+                phase="content_fallback",
+                route=fallback.route,
+                content=fallback.content,
+                source_url=fallback.source_url,
+                content_type=fallback.content_type,
+                attempts=[attempt.to_dict() for attempt in fallback.attempts],
+                metadata=fallback.metadata,
+                reason="content_fallback",
+            )
+
+    archive = try_archive_fallback(
         original_url,
         transport,
         timeout=min(timeout, 25),
         max_content_chars=max_content_chars,
-        last_response=last_response,
     )
-    if fallback is None:
-        return failure
+    if archive is not None:
+        return _fallback_fetch_result(
+            failure,
+            platform="archive-fallback",
+            phase="archive_fallback",
+            route=archive.route,
+            content=archive.content,
+            source_url=archive.source_url,
+            content_type=archive.content_type,
+            attempts=[attempt.to_dict() for attempt in archive.attempts],
+            metadata=archive.metadata,
+            reason="archive_fallback",
+        )
 
+    return failure
+
+
+def _fallback_fetch_result(
+    failure: FetchResult,
+    *,
+    platform: str,
+    phase: str,
+    route: str,
+    content: str,
+    source_url: str,
+    content_type: str,
+    attempts: list[dict[str, object]],
+    metadata: dict[str, object],
+    reason: str,
+) -> FetchResult:
     trace = list(failure.trace)
-    last_attempt = fallback.attempts[-1] if fallback.attempts else None
+    last_attempt = attempts[-1] if attempts else {}
     trace.append(
         Attempt(
-            phase="content_fallback",
-            executor=fallback.route,
-            url=fallback.source_url,
-            status=last_attempt.status if last_attempt else 0,
-            body_size=len(fallback.content.encode("utf-8", "ignore")),
+            phase=phase,
+            executor=route,
+            url=source_url,
+            status=int(last_attempt.get("status") or 0),
+            body_size=len(content.encode("utf-8", "ignore")),
             verdict=Verdict.STRONG_OK,
-            reasons=["content_fallback"],
+            reasons=[reason],
         )
     )
     return FetchResult(
         ok=True,
-        content=fallback.content,
-        final_url=fallback.source_url,
+        content=content,
+        final_url=source_url,
         verdict=Verdict.STRONG_OK,
-        summary=f"content fallback succeeded: {fallback.route}",
+        summary=f"{platform.replace('-', ' ')} succeeded: {route}",
         trace=trace,
         stop_reason="success",
         untried_routes=[],
         metadata={
-            "platform": "content-fallback",
-            "route": fallback.route,
-            "source_url": fallback.source_url,
-            "content_type": fallback.content_type,
-            "fallback_attempts": [attempt.to_dict() for attempt in fallback.attempts],
-            **fallback.metadata,
+            "platform": platform,
+            "route": route,
+            "source_url": source_url,
+            "content_type": content_type,
+            "fallback_attempts": attempts,
+            **metadata,
         },
     )
 

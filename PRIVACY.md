@@ -10,6 +10,7 @@ The tool may fetch:
 - public route variants such as feeds or metadata endpoints
 - content fallback URLs through Jina Reader (`r.jina.ai`)
 - RSS/Atom feed candidates on the same public origin
+- public archive lookup and snapshot URLs through Wayback and archive.today/archive.ph mirrors
 - media metadata through `yt-dlp`
 
 The tool may return fetched page content to the MCP client that invoked it. Treat returned web content as untrusted.

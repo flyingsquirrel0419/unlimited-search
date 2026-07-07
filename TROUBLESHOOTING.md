@@ -64,6 +64,19 @@ This is usually acceptable for summaries, but it may not be equivalent to the fu
 
 Feed fallback reads the site's feed, not necessarily the exact missing URL. This is useful when the goal is to recover public site content, but it can be too broad for exact-page reads. Check `metadata.source_url` to see which feed was used.
 
+## Unexpected `archive-fallback` result
+
+`archive-fallback` means the live URL and content fallbacks failed, but a public archive snapshot was available.
+
+Common routes:
+
+- `wayback-available`: Wayback Available API returned a closest snapshot.
+- `wayback-latest`: Wayback resolved a direct latest snapshot.
+- `wayback-cdx`: Wayback CDX returned the latest HTTP 200 snapshot.
+- `archive-today`: archive.today/archive.ph mirror returned a readable snapshot.
+
+Archive snapshots can be stale, incomplete, or different from the live page. Check `metadata.source_url` before treating the content as current.
+
 ## `--max-attempts 0`
 
 `--max-attempts 0` skips the generic HTTP grid. It still allows public routes unless `--no-public-routes` is also set.
@@ -72,6 +85,12 @@ Use both flags to test only content fallbacks:
 
 ```bash
 unlimited-search read https://example.com --no-public-routes --max-attempts 0
+```
+
+Archive fallback is most useful after the original URL is confirmed missing or blocked. Use at least one generic attempt when testing archive recovery:
+
+```bash
+unlimited-search read http://www.whitehouse.gov/1600/presidents/barackobama --no-public-routes --max-attempts 1
 ```
 
 ## Google Scholar

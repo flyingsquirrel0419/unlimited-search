@@ -1,11 +1,12 @@
 # Platform Coverage
 
-`unlimited-search` uses four layers:
+`unlimited-search` uses five layers:
 
 1. Automatic public routes for platforms with stable unauthenticated APIs.
 2. Generic browser-like HTTP fetching with TLS impersonation.
 3. Non-browser content fallbacks through Jina Reader, RSS/Atom discovery, and metadata salvage.
-4. `yt-dlp` metadata extraction for public media URLs.
+4. Public archive fallbacks through Wayback and archive.today/archive.ph best-effort routes.
+5. `yt-dlp` metadata extraction for public media URLs.
 
 This project does not bypass hard anti-abuse systems, login walls, paywalls, or IP bans.
 
@@ -75,6 +76,23 @@ Fallback success is reported as:
 
 `--max-attempts 0` skips the generic HTTP grid and is useful for fallback smoke tests.
 
+## Archive Fallbacks
+
+When direct reads and content fallbacks fail, `unlimited-search` can try public archive snapshots:
+
+- Wayback Available API
+- Wayback latest/direct snapshot
+- Wayback CDX latest HTTP 200 snapshot
+- archive.today/archive.ph mirror domains as best-effort HTML snapshots
+
+Archive fallback success is reported as:
+
+- `metadata.platform = "archive-fallback"`
+- `metadata.route = "wayback-available"`, `"wayback-latest"`, `"wayback-cdx"`, or `"archive-today"`
+- `metadata.content_type = "archive_html"`
+
+Archive content may be stale or transformed compared with the live page.
+
 ## Representative Smoke Tests
 
 ```bash
@@ -87,6 +105,9 @@ uv run unlimited-search read https://example.com --no-public-routes --max-attemp
 # RSS/Atom discovery fallback
 uv run unlimited-search read https://xkcd.com/not-a-real-page --no-public-routes --max-attempts 0 --max-content-chars 300
 
+# Archive fallback
+uv run unlimited-search read http://www.whitehouse.gov/1600/presidents/barackobama --no-public-routes --max-attempts 1 --max-content-chars 300
+
 # Media metadata
 uv run unlimited-search read https://vimeo.com/76979871 --max-content-chars 300
 ```
@@ -98,5 +119,5 @@ These are intentionally not first-pass automatic parity:
 - Browser challenge solving or direct browser execution with Playwright.
 - API-key, OAuth, or account-gated endpoints.
 - X/Twitter keyword search orchestration through a web search engine.
-- Archive.today and Google cache fallbacks.
+- Google cache fallback.
 - Hard anti-abuse bypasses such as TikTok IP bans or repeated 429 rate limits.
