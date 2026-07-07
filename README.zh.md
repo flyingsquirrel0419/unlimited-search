@@ -6,7 +6,7 @@
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)](pyproject.toml)
 
-<p align="center"><strong>将公开 URL 转换为可直接供 agent 使用的上下文。</strong></p>
+<p align="center"><strong>把公开页面转化为可用信号。</strong></p>
 
 <p align="center">
   <img src="assets/hero.png" width="860" alt="unlimited-search hero，展示公开 URL 通过 routes、HTTP、RSS、archives 和 media 转换为适用于 MCP 与 CLI 的结构化文本。">

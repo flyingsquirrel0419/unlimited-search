@@ -6,7 +6,7 @@
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)](pyproject.toml)
 
-<p align="center"><strong>Convierte URLs públicas en contexto listo para agentes.</strong></p>
+<p align="center"><strong>De páginas públicas a señales utilizables.</strong></p>
 
 <p align="center">
   <img src="assets/hero.png" width="860" alt="Imagen hero de unlimited-search mostrando URLs públicas que pasan por routes, HTTP, RSS, archives y media para convertirse en texto estructurado para MCP y CLI.">

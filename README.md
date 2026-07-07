@@ -6,7 +6,7 @@ English | [한국어](README.ko.md) | [中文](README.zh.md) | [日本語](READM
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)](pyproject.toml)
 
-<p align="center"><strong>Turn public URLs into agent-ready context.</strong></p>
+<p align="center"><strong>From public pages to usable signal.</strong></p>
 
 <p align="center">
   <img src="assets/hero.png" width="860" alt="unlimited-search hero showing public URLs routed through routes, HTTP, RSS, archives, and media into clean structured text for MCP and CLI.">
