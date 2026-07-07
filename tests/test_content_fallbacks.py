@@ -49,6 +49,36 @@ def test_jina_json_content_fallback_succeeds() -> None:
     assert "long markdown body" in result.content
 
 
+def test_jina_json_content_fallback_rejects_block_page_text() -> None:
+    jina_url = "https://r.jina.ai/https://www.reddit.com/r/programming/.json"
+    transport = FakeTransport(
+        {
+            jina_url: ResponseEnvelope(
+                200,
+                json.dumps(
+                    {
+                        "data": {
+                            "title": "",
+                            "url": "https://www.reddit.com/r/programming/.json",
+                            "content": (
+                                "You've been blocked by network security.\n\n"
+                                "To continue, log in to your Reddit account or use your developer token.\n\n"
+                                "File a ticket if this is a mistake."
+                            ),
+                        }
+                    }
+                ),
+                jina_url,
+                headers={"content-type": "application/json"},
+            )
+        }
+    )
+
+    result = try_content_fallbacks("https://www.reddit.com/r/programming/.json", transport)  # type: ignore[arg-type]
+
+    assert result is None
+
+
 def test_jina_alternate_feed_fallback_succeeds() -> None:
     jina_url = "https://r.jina.ai/https://example.com"
     feed_url = "https://example.com/feed.xml"

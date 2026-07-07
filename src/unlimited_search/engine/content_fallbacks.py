@@ -68,8 +68,10 @@ def try_content_fallbacks(
     )
     jina_response = jina_result.response
     jina_data = _parse_jina_json(jina_response.text) if jina_response and jina_response.status_code == 200 else None
-    jina_ok = bool(jina_data and _useful_text(jina_data.get("content", "")))
-    attempts.append(_attempt("jina-json", jina_url, jina_ok, jina_response, jina_result.error))
+    jina_content = jina_data.get("content", "") if jina_data else ""
+    jina_rejection = _fallback_rejection_reason(jina_content)
+    jina_ok = bool(jina_data and _useful_text(jina_content) and not jina_rejection)
+    attempts.append(_attempt("jina-json", jina_url, jina_ok, jina_response, jina_rejection or jina_result.error))
     if jina_data:
         feed_candidates.extend(_alternate_feed_urls(jina_data))
     if jina_ok and jina_data is not None:
@@ -355,6 +357,29 @@ def _looks_like_challenge_html(text: str) -> bool:
             "slardarwaf",
         )
     )
+
+
+def _fallback_rejection_reason(text: object) -> str:
+    if not isinstance(text, str):
+        return ""
+    lowered = text.lower()
+    markers = (
+        "you've been blocked by network security",
+        "you have been blocked by network security",
+        "to continue, log in",
+        "use your developer token",
+        "sign in to continue",
+        "log in to continue",
+        "login required",
+        "please log in",
+        "subscribe to continue",
+        "paywall",
+        "captcha",
+    )
+    for marker in markers:
+        if marker in lowered:
+            return f"blocked_content:{marker}"
+    return ""
 
 
 def _attempt(
