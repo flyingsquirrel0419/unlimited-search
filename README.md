@@ -6,6 +6,10 @@ English | [한국어](README.ko.md) | [中文](README.zh.md) | [日本語](READM
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)](pyproject.toml)
 
+<p align="center">
+  <img src="assets/hero.png" width="860" alt="unlimited-search hero showing public URLs routed through routes, HTTP, RSS, archives, and media into clean structured text for MCP and CLI.">
+</p>
+
 `unlimited-search` is a Python CLI and MCP server for reading public web content when a normal direct fetch is not enough. It combines platform public routes, browser-like HTTP identities, content fallbacks, public archive fallbacks, and media metadata extraction behind one local tool.
 
 It is built for agents and automation that need usable text from public URLs. It is not intended to bypass logins, paywalls, CAPTCHA, private networks, account restrictions, IP bans, or access controls.
@@ -123,6 +127,10 @@ Available tools:
 More configuration examples are in [MCP configuration](docs/mcp-config.md).
 
 ## How Reads Work
+
+<p align="center">
+  <img src="assets/pipeline.png" width="860" alt="Pipeline diagram: Public URL to platform routes, HTTP grid, content fallbacks, archive fallbacks, media metadata, and clean public text, with login, paywall, or CAPTCHA stopping safely.">
+</p>
 
 `read_public_url` tries the least invasive public routes first, then progressively broader recovery paths:
 
