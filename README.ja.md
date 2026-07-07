@@ -1,6 +1,6 @@
 # unlimited-search
 
-[English](README.md) | [한국어](README.ko.md) | [中文](README.zh.md) | [日本語](README.ja.md) | [Español](README.es.md)
+[English](README.md) | [한국어](README.ko.md) | [中文](README.zh.md) | 日本語 | [Español](README.es.md)
 
 公開 Web コンテンツを読むための Python MCP サーバーと CLI です。プラットフォーム別の公開 route、ブラウザ風 HTTP identity、非ブラウザ content fallback、公開 archive fallback、メディアメタデータ抽出を提供します。
 

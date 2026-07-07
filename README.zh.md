@@ -1,6 +1,6 @@
 # unlimited-search
 
-[English](README.md) | [한국어](README.ko.md) | [中文](README.zh.md) | [日本語](README.ja.md) | [Español](README.es.md)
+[English](README.md) | [한국어](README.ko.md) | 中文 | [日本語](README.ja.md) | [Español](README.es.md)
 
 用于读取公开网页内容的 Python MCP 服务器和 CLI。它支持平台公开路由、类似浏览器的 HTTP identity、非浏览器内容 fallback、公开 archive fallback，以及媒体元数据提取。
 

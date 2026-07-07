@@ -1,6 +1,6 @@
 # unlimited-search
 
-[English](README.md) | [한국어](README.ko.md) | [中文](README.zh.md) | [日本語](README.ja.md) | [Español](README.es.md)
+[English](README.md) | [한국어](README.ko.md) | [中文](README.zh.md) | [日本語](README.ja.md) | Español
 
 Servidor MCP y CLI en Python para leer contenido web público mediante rutas públicas por plataforma, identidades HTTP similares a un navegador, fallbacks de contenido sin navegador, fallbacks de archivos públicos y extracción de metadatos de medios.
 

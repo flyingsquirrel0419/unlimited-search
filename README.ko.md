@@ -1,6 +1,6 @@
 # unlimited-search
 
-[English](README.md) | [한국어](README.ko.md) | [中文](README.zh.md) | [日本語](README.ja.md) | [Español](README.es.md)
+[English](README.md) | 한국어 | [中文](README.zh.md) | [日本語](README.ja.md) | [Español](README.es.md)
 
 공개 웹 콘텐츠를 안정적으로 읽기 위한 Python MCP 서버와 CLI입니다. 플랫폼별 공개 route, 브라우저형 HTTP identity, 비브라우저 content fallback, 공개 archive fallback, 미디어 메타데이터 추출을 제공합니다.
 
