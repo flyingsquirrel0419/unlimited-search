@@ -75,10 +75,17 @@ python -m pip uninstall unlimited-search
 
 ```bash
 unlimited-search help
-unlimited-search read URL
-unlimited-search diagnose URL
-unlimited-search media URL
-unlimited-search serve
+unlimited-search <command> [arguments]
+```
+
+Commands:
+
+```text
+serve           Start the MCP stdio server
+read <url>      Read a public URL
+diagnose <url>  Diagnose access without full content
+media <url>     Extract public media metadata
+help            Show this help
 ```
 
 Common examples:

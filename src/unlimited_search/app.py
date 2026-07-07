@@ -91,10 +91,13 @@ def main(argv: list[str] | None = None) -> int | None:
         print(
             "unlimited-search\n\n"
             "Usage:\n"
-            "  unlimited-search serve\n"
-            "  unlimited-search read URL\n"
-            "  unlimited-search diagnose URL\n"
-            "  unlimited-search media URL\n"
+            "  unlimited-search <command> [arguments]\n\n"
+            "Commands:\n"
+            "  serve           Start the MCP stdio server\n"
+            "  read <url>      Read a public URL\n"
+            "  diagnose <url>  Diagnose access without full content\n"
+            "  media <url>     Extract public media metadata\n"
+            "  help            Show this help\n"
         )
         return 0
     print(f"unknown command: {command}", file=sys.stderr)
