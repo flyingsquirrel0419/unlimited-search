@@ -1,0 +1,76 @@
+version: 1
+defaults:
+  mode: read
+  timeout: 25
+  max_attempts: 4
+  max_content_chars: 4000
+  enable_public_routes: true
+cases:
+  - id: reddit_python
+    group: social
+    url: https://www.reddit.com/r/python
+    expect:
+      ok: true
+      platform: reddit
+      route: rss
+
+  - id: namuwiki_main
+    group: difficult
+    url: https://namu.wiki/w/%EB%82%98%EB%AC%B4%EC%9C%84%ED%82%A4:%EB%8C%80%EB%AC%B8
+    required: false
+    expect:
+      stop_reason_not_in: [unsafe_url]
+
+  - id: tiktok_public_video
+    group: difficult
+    url: https://www.tiktok.com/@tiktok/video/7106594312292453678
+    required: false
+    expect:
+      stop_reason_not_in: [unsafe_url]
+
+  - id: amazon_product
+    group: difficult
+    url: https://www.amazon.com/dp/B0C7SH9D3W
+    required: false
+    expect:
+      stop_reason_not_in: [unsafe_url]
+
+  - id: google_scholar_search
+    group: difficult
+    url: https://scholar.google.com/scholar?q=large+language+models
+    required: false
+    expect:
+      stop_reason_not_in: [unsafe_url]
+
+  - id: github_search
+    group: search
+    url: https://github.com/search?q=unlimited+search&type=repositories
+    expect:
+      ok: true
+      platform: github
+      route: search-repositories
+
+  - id: hn_search
+    group: search
+    url: https://hn.algolia.com/?q=python
+    expect:
+      ok: true
+      platform: hacker-news
+      route: algolia-search
+
+  - id: google_news_search
+    group: search
+    url: https://news.google.com/search?q=openai
+    expect:
+      ok: true
+      platform: google-news
+      route: rss-search
+
+  - id: wikipedia_public_route
+    group: stable
+    url: https://en.wikipedia.org/wiki/OpenAI
+    expect:
+      ok: true
+      platform: wikipedia
+      route: rest-summary
+      min_content_length: 200

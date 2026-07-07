@@ -165,6 +165,26 @@ uv run unlimited-search read http://www.whitehouse.gov/1600/presidents/barackoba
 uv run pytest
 ```
 
+## Live Eval Set
+
+Use the live eval runner when changing routes or fallbacks and you want before/after evidence across real sites.
+
+```bash
+# Show eval cases
+uv run python scripts/run_eval.py --list
+
+# Run the full live set and write eval-results/eval-<timestamp>.jsonl
+uv run python scripts/run_eval.py
+
+# Run only stable/search routes
+uv run python scripts/run_eval.py --group stable --group search
+
+# Compare with a previous run
+uv run python scripts/run_eval.py --baseline eval-results/eval-20260707T000000Z.jsonl --fail-on-regression
+```
+
+The default set lives in `scripts/eval_urls.yaml`. Difficult sites such as NamuWiki, TikTok, Amazon, and Google Scholar are marked optional so they produce warnings instead of failing the whole run when the remote site blocks or rate-limits automation.
+
 ## Project Docs
 
 - [Platform coverage](PLATFORMS.md)
