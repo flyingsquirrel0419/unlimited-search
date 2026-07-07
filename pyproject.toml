@@ -1,6 +1,6 @@
 [project]
 name = "unlimited-search"
-version = "0.1.0"
+version = "1.0.0"
 description = "MCP server for reading public web pages through resilient public routes."
 readme = "README.md"
 requires-python = ">=3.12"

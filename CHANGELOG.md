@@ -2,7 +2,7 @@
 
 All notable changes to `unlimited-search` will be documented here.
 
-## 0.1.0 - Unreleased
+## 1.0.0 - Unreleased
 
 - Added MCP stdio server with `read_public_url`, `read_public_urls`, `diagnose_access`, and `extract_media`.
 - Added resilient public-route readers for Reddit, X/Twitter, and YouTube metadata.
