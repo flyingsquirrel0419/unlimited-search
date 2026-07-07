@@ -2,33 +2,33 @@
 
 [English](README.md) | [한국어](README.ko.md) | [中文](README.zh.md) | [日本語](README.ja.md) | [Español](README.es.md)
 
-Python MCP server and CLI for reading public web content through public-only routes, browser-like HTTP identities, non-browser content fallbacks, public archive fallbacks, and media metadata extraction.
+Servidor MCP y CLI en Python para leer contenido web público mediante rutas públicas por plataforma, identidades HTTP similares a un navegador, fallbacks de contenido sin navegador, fallbacks de archivos públicos y extracción de metadatos de medios.
 
-`unlimited-search` is public-content tooling. It is not intended to bypass logins, paywalls, CAPTCHA, private networks, or access controls.
+`unlimited-search` es una herramienta para contenido público. No está diseñada para eludir inicios de sesión, paywalls, CAPTCHA, redes privadas ni controles de acceso.
 
-## How It Reads
+## Cómo Lee
 
-`read_public_url` tries these layers in order:
+`read_public_url` prueba estas capas en orden:
 
-1. Platform public routes for known sites such as Reddit, X/Twitter, Bluesky, Hacker News, Google News, Stack Overflow, Wikipedia, GitHub, npm, PyPI, Wayback, and others.
-2. A generic HTTP grid with browser-like TLS identities, URL variants, referer strategies, response validation, and HTTP/1.1 curl fallback for selected transport failures.
-3. Non-browser content fallbacks:
-   - Jina Reader JSON content
-   - RSS/Atom discovery through Jina `external.alternate`
-   - common origin feed paths such as `/feed`, `/rss`, `/atom.xml`
-   - OGP, JSON-LD, Schema.org, and Next.js payload metadata salvage
-4. Public archive fallbacks:
+1. Rutas públicas de plataformas conocidas como Reddit, X/Twitter, Bluesky, Hacker News, Google News, Stack Overflow, Wikipedia, GitHub, npm, PyPI, Wayback y otras
+2. Un grid HTTP genérico con identidades TLS similares a navegador, variantes de URL, estrategias de referer, validación de respuestas y fallback HTTP/1.1 con curl para ciertos fallos de transporte
+3. Fallbacks de contenido sin navegador
+   - Contenido JSON de Jina Reader
+   - Descubrimiento RSS/Atom mediante Jina `external.alternate`
+   - Rutas feed comunes como `/feed`, `/rss`, `/atom.xml`
+   - Salvage de metadatos OGP, JSON-LD, Schema.org y payloads de Next.js
+4. Fallbacks de archivos públicos
    - Wayback Available API
    - Wayback latest/direct snapshot
    - Wayback CDX latest 200 snapshot
-   - archive.today/archive.ph best-effort snapshots
-5. `yt-dlp` metadata extraction for known public media hosts.
+   - snapshots best-effort de archive.today/archive.ph
+5. Extracción de metadatos con `yt-dlp` para hosts de medios públicos conocidos
 
-See [Platform coverage](PLATFORMS.md) for the current support matrix and known gaps.
+Consulta [Platform coverage](PLATFORMS.md) para la matriz de soporte actual y las limitaciones conocidas.
 
-## Install
+## Instalación
 
-Install `uv` first:
+Instala `uv` primero.
 
 macOS / Linux:
 
@@ -48,9 +48,9 @@ Windows PowerShell:
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-Install `unlimited-search`.
+Instala `unlimited-search`.
 
-Because this repository is private, install commands need a GitHub token with repository read access in `GITHUB_TOKEN`.
+Como este repositorio puede ser privado, los comandos de instalación necesitan un token de GitHub con acceso de lectura al repositorio en `GITHUB_TOKEN`.
 
 macOS / Linux:
 
@@ -67,7 +67,7 @@ Windows PowerShell:
 powershell -ExecutionPolicy ByPass -c "$h=@{Authorization='Bearer '+$env:GITHUB_TOKEN;Accept='application/vnd.github.raw'}; irm -Headers $h https://api.github.com/repos/flyingsquirrel0419/unlimited-search/contents/scripts/install.ps1 | iex"
 ```
 
-Alternatively, with GitHub CLI:
+También puedes usar GitHub CLI:
 
 ```bash
 gh repo clone flyingsquirrel0419/unlimited-search ~/.unlimited-search
@@ -76,7 +76,7 @@ uv sync --no-dev
 scripts/install.sh update
 ```
 
-## Commands
+## Comandos
 
 ```bash
 unlimited-search serve
@@ -89,15 +89,15 @@ unlimited-search uninstall
 unlimited-search help
 ```
 
-Notes:
+Notas:
 
-- `read` returns content, trace, verdict, and metadata.
-- `diagnose` returns the compact trace without full content.
-- `media` uses `yt-dlp --dump-json` and does not download media.
-- `--max-attempts 0` skips the generic HTTP grid, which is useful for forcing content fallback smoke tests.
-- Fallback successes are intentionally reported as `weak_ok` or `suspect_ok`, not `strong_ok`.
+- `read` devuelve content, trace, verdict y metadata.
+- `diagnose` devuelve un trace compacto sin el contenido completo.
+- `media` usa `yt-dlp --dump-json` y no descarga medios.
+- `--max-attempts 0` omite el grid HTTP genérico y sirve para forzar pruebas de content fallback.
+- Los fallbacks exitosos se reportan intencionalmente como `weak_ok` o `suspect_ok`, no como `strong_ok`.
 
-## MCP Config
+## Configuración MCP
 
 macOS / Linux:
 
@@ -131,7 +131,7 @@ Windows PowerShell:
 }
 ```
 
-## Development
+## Desarrollo
 
 ```bash
 uv sync --extra dev
@@ -141,56 +141,38 @@ uv run unlimited-search serve
 uv run pytest
 ```
 
-## Tools
+## Herramientas MCP
 
 - `read_public_url`
 - `read_public_urls`
 - `diagnose_access`
 - `extract_media`
 
-## Verification Examples
+## Ejemplos de Verificación
 
 ```bash
-# Public-route smoke
 uv run unlimited-search read https://en.wikipedia.org/wiki/OpenAI --max-content-chars 300
-
-# Jina fallback smoke
 uv run unlimited-search read https://example.com --no-public-routes --max-attempts 0 --max-content-chars 300
-
-# RSS fallback smoke
 uv run unlimited-search read https://xkcd.com/not-a-real-page --no-public-routes --max-attempts 0 --max-content-chars 300
-
-# Archive fallback smoke
 uv run unlimited-search read http://www.whitehouse.gov/1600/presidents/barackobama --no-public-routes --max-attempts 1 --max-content-chars 300
-
-# Full test suite
 uv run pytest
 ```
 
 ## Live Eval Set
 
-Use the live eval runner when changing routes or fallbacks and you want before/after evidence across real sites.
+Usa el live eval runner cuando cambies rutas o fallbacks y necesites evidencia antes/después con sitios reales.
 
 ```bash
-# Show eval cases
 uv run python scripts/run_eval.py --list
-
-# Run the full live set and write eval-results/eval-<timestamp>.jsonl
 uv run python scripts/run_eval.py
-
-# Also write human-readable reports
 uv run python scripts/run_eval.py --markdown eval-results/report.md --csv eval-results/report.csv
-
-# Run only stable/search routes
 uv run python scripts/run_eval.py --group stable --group search
-
-# Compare with a previous run
 uv run python scripts/run_eval.py --baseline eval-results/eval-20260707T000000Z.jsonl --fail-on-regression
 ```
 
-The default set lives in `scripts/eval_urls.yaml`. Difficult sites such as NamuWiki, TikTok, Naver Search, Amazon, and Google Scholar are marked optional so they produce warnings instead of failing the whole run when the remote site blocks or rate-limits automation.
+El conjunto predeterminado está en `scripts/eval_urls.yaml`. Sitios difíciles como NamuWiki, TikTok, Naver Search, Amazon y Google Scholar están marcados como opcionales, así que bloqueos remotos o rate limits no hacen fallar toda la ejecución.
 
-## Project Docs
+## Documentos del Proyecto
 
 - [Platform coverage](PLATFORMS.md)
 - [Security](SECURITY.md)

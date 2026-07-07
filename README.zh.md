@@ -2,33 +2,33 @@
 
 [English](README.md) | [한국어](README.ko.md) | [中文](README.zh.md) | [日本語](README.ja.md) | [Español](README.es.md)
 
-Python MCP server and CLI for reading public web content through public-only routes, browser-like HTTP identities, non-browser content fallbacks, public archive fallbacks, and media metadata extraction.
+用于读取公开网页内容的 Python MCP 服务器和 CLI。它支持平台公开路由、类似浏览器的 HTTP identity、非浏览器内容 fallback、公开 archive fallback，以及媒体元数据提取。
 
-`unlimited-search` is public-content tooling. It is not intended to bypass logins, paywalls, CAPTCHA, private networks, or access controls.
+`unlimited-search` 是公开内容工具。它不是用于绕过登录、付费墙、CAPTCHA、私有网络或访问控制的工具。
 
-## How It Reads
+## 工作方式
 
-`read_public_url` tries these layers in order:
+`read_public_url` 会按以下层级尝试读取：
 
-1. Platform public routes for known sites such as Reddit, X/Twitter, Bluesky, Hacker News, Google News, Stack Overflow, Wikipedia, GitHub, npm, PyPI, Wayback, and others.
-2. A generic HTTP grid with browser-like TLS identities, URL variants, referer strategies, response validation, and HTTP/1.1 curl fallback for selected transport failures.
-3. Non-browser content fallbacks:
+1. 已知站点的公开路由，例如 Reddit、X/Twitter、Bluesky、Hacker News、Google News、Stack Overflow、Wikipedia、GitHub、npm、PyPI、Wayback 等
+2. 通用 HTTP grid，包括类似浏览器的 TLS identity、URL 变体、referer 策略、响应验证，以及针对部分传输失败的 HTTP/1.1 curl fallback
+3. 非浏览器内容 fallback
    - Jina Reader JSON content
-   - RSS/Atom discovery through Jina `external.alternate`
-   - common origin feed paths such as `/feed`, `/rss`, `/atom.xml`
-   - OGP, JSON-LD, Schema.org, and Next.js payload metadata salvage
-4. Public archive fallbacks:
+   - 通过 Jina `external.alternate` 发现 RSS/Atom
+   - `/feed`、`/rss`、`/atom.xml` 等常见 origin feed
+   - OGP、JSON-LD、Schema.org、Next.js payload metadata salvage
+4. 公开 archive fallback
    - Wayback Available API
    - Wayback latest/direct snapshot
    - Wayback CDX latest 200 snapshot
-   - archive.today/archive.ph best-effort snapshots
-5. `yt-dlp` metadata extraction for known public media hosts.
+   - archive.today/archive.ph best-effort snapshot
+5. 对已知公开媒体 host 使用 `yt-dlp` 提取元数据
 
-See [Platform coverage](PLATFORMS.md) for the current support matrix and known gaps.
+当前平台覆盖范围和已知限制见 [Platform coverage](PLATFORMS.md)。
 
-## Install
+## 安装
 
-Install `uv` first:
+先安装 `uv`。
 
 macOS / Linux:
 
@@ -48,9 +48,9 @@ Windows PowerShell:
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-Install `unlimited-search`.
+安装 `unlimited-search`。
 
-Because this repository is private, install commands need a GitHub token with repository read access in `GITHUB_TOKEN`.
+如果此仓库是 private，需要在 `GITHUB_TOKEN` 中提供具有仓库读取权限的 GitHub token。
 
 macOS / Linux:
 
@@ -67,7 +67,7 @@ Windows PowerShell:
 powershell -ExecutionPolicy ByPass -c "$h=@{Authorization='Bearer '+$env:GITHUB_TOKEN;Accept='application/vnd.github.raw'}; irm -Headers $h https://api.github.com/repos/flyingsquirrel0419/unlimited-search/contents/scripts/install.ps1 | iex"
 ```
 
-Alternatively, with GitHub CLI:
+也可以使用 GitHub CLI。
 
 ```bash
 gh repo clone flyingsquirrel0419/unlimited-search ~/.unlimited-search
@@ -76,7 +76,7 @@ uv sync --no-dev
 scripts/install.sh update
 ```
 
-## Commands
+## 命令
 
 ```bash
 unlimited-search serve
@@ -89,15 +89,15 @@ unlimited-search uninstall
 unlimited-search help
 ```
 
-Notes:
+说明：
 
-- `read` returns content, trace, verdict, and metadata.
-- `diagnose` returns the compact trace without full content.
-- `media` uses `yt-dlp --dump-json` and does not download media.
-- `--max-attempts 0` skips the generic HTTP grid, which is useful for forcing content fallback smoke tests.
-- Fallback successes are intentionally reported as `weak_ok` or `suspect_ok`, not `strong_ok`.
+- `read` 返回 content、trace、verdict 和 metadata。
+- `diagnose` 返回不包含完整 content 的 compact trace。
+- `media` 使用 `yt-dlp --dump-json`，不会下载媒体文件。
+- `--max-attempts 0` 会跳过通用 HTTP grid，适合强制测试 content fallback。
+- fallback 成功会有意标记为 `weak_ok` 或 `suspect_ok`，而不是 `strong_ok`。
 
-## MCP Config
+## MCP 配置
 
 macOS / Linux:
 
@@ -131,7 +131,7 @@ Windows PowerShell:
 }
 ```
 
-## Development
+## 开发
 
 ```bash
 uv sync --extra dev
@@ -141,56 +141,38 @@ uv run unlimited-search serve
 uv run pytest
 ```
 
-## Tools
+## MCP 工具
 
 - `read_public_url`
 - `read_public_urls`
 - `diagnose_access`
 - `extract_media`
 
-## Verification Examples
+## 验证示例
 
 ```bash
-# Public-route smoke
 uv run unlimited-search read https://en.wikipedia.org/wiki/OpenAI --max-content-chars 300
-
-# Jina fallback smoke
 uv run unlimited-search read https://example.com --no-public-routes --max-attempts 0 --max-content-chars 300
-
-# RSS fallback smoke
 uv run unlimited-search read https://xkcd.com/not-a-real-page --no-public-routes --max-attempts 0 --max-content-chars 300
-
-# Archive fallback smoke
 uv run unlimited-search read http://www.whitehouse.gov/1600/presidents/barackobama --no-public-routes --max-attempts 1 --max-content-chars 300
-
-# Full test suite
 uv run pytest
 ```
 
 ## Live Eval Set
 
-Use the live eval runner when changing routes or fallbacks and you want before/after evidence across real sites.
+当你修改 route 或 fallback，并希望用真实站点做 before/after 证据时，可以使用 live eval runner。
 
 ```bash
-# Show eval cases
 uv run python scripts/run_eval.py --list
-
-# Run the full live set and write eval-results/eval-<timestamp>.jsonl
 uv run python scripts/run_eval.py
-
-# Also write human-readable reports
 uv run python scripts/run_eval.py --markdown eval-results/report.md --csv eval-results/report.csv
-
-# Run only stable/search routes
 uv run python scripts/run_eval.py --group stable --group search
-
-# Compare with a previous run
 uv run python scripts/run_eval.py --baseline eval-results/eval-20260707T000000Z.jsonl --fail-on-regression
 ```
 
-The default set lives in `scripts/eval_urls.yaml`. Difficult sites such as NamuWiki, TikTok, Naver Search, Amazon, and Google Scholar are marked optional so they produce warnings instead of failing the whole run when the remote site blocks or rate-limits automation.
+默认 eval set 位于 `scripts/eval_urls.yaml`。NamuWiki、TikTok、Naver Search、Amazon、Google Scholar 等困难站点被标记为 optional，因此远端阻断或 rate limit 不会导致整个运行失败。
 
-## Project Docs
+## 项目文档
 
 - [Platform coverage](PLATFORMS.md)
 - [Security](SECURITY.md)

@@ -2,33 +2,33 @@
 
 [English](README.md) | [한국어](README.ko.md) | [中文](README.zh.md) | [日本語](README.ja.md) | [Español](README.es.md)
 
-Python MCP server and CLI for reading public web content through public-only routes, browser-like HTTP identities, non-browser content fallbacks, public archive fallbacks, and media metadata extraction.
+公開 Web コンテンツを読むための Python MCP サーバーと CLI です。プラットフォーム別の公開 route、ブラウザ風 HTTP identity、非ブラウザ content fallback、公開 archive fallback、メディアメタデータ抽出を提供します。
 
-`unlimited-search` is public-content tooling. It is not intended to bypass logins, paywalls, CAPTCHA, private networks, or access controls.
+`unlimited-search` は公開コンテンツ用のツールです。ログイン、paywall、CAPTCHA、プライベートネットワーク、アクセス制御を回避するためのものではありません。
 
-## How It Reads
+## 読み取りの仕組み
 
-`read_public_url` tries these layers in order:
+`read_public_url` は次の順序で試行します。
 
-1. Platform public routes for known sites such as Reddit, X/Twitter, Bluesky, Hacker News, Google News, Stack Overflow, Wikipedia, GitHub, npm, PyPI, Wayback, and others.
-2. A generic HTTP grid with browser-like TLS identities, URL variants, referer strategies, response validation, and HTTP/1.1 curl fallback for selected transport failures.
-3. Non-browser content fallbacks:
+1. Reddit、X/Twitter、Bluesky、Hacker News、Google News、Stack Overflow、Wikipedia、GitHub、npm、PyPI、Wayback など既知サイトの公開 route
+2. ブラウザ風 TLS identity、URL variant、referer strategy、response validation、一部 transport failure 用の HTTP/1.1 curl fallback を使う汎用 HTTP grid
+3. 非ブラウザ content fallback
    - Jina Reader JSON content
-   - RSS/Atom discovery through Jina `external.alternate`
-   - common origin feed paths such as `/feed`, `/rss`, `/atom.xml`
-   - OGP, JSON-LD, Schema.org, and Next.js payload metadata salvage
-4. Public archive fallbacks:
+   - Jina `external.alternate` からの RSS/Atom discovery
+   - `/feed`、`/rss`、`/atom.xml` などの origin feed 候補
+   - OGP、JSON-LD、Schema.org、Next.js payload metadata salvage
+4. 公開 archive fallback
    - Wayback Available API
    - Wayback latest/direct snapshot
    - Wayback CDX latest 200 snapshot
-   - archive.today/archive.ph best-effort snapshots
-5. `yt-dlp` metadata extraction for known public media hosts.
+   - archive.today/archive.ph best-effort snapshot
+5. 既知の公開メディア host に対する `yt-dlp` metadata extraction
 
-See [Platform coverage](PLATFORMS.md) for the current support matrix and known gaps.
+現在の対応状況と既知の制限は [Platform coverage](PLATFORMS.md) を参照してください。
 
-## Install
+## インストール
 
-Install `uv` first:
+まず `uv` をインストールします。
 
 macOS / Linux:
 
@@ -48,9 +48,9 @@ Windows PowerShell:
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-Install `unlimited-search`.
+`unlimited-search` をインストールします。
 
-Because this repository is private, install commands need a GitHub token with repository read access in `GITHUB_TOKEN`.
+このリポジトリが private の場合、`GITHUB_TOKEN` にリポジトリ読み取り権限を持つ GitHub token が必要です。
 
 macOS / Linux:
 
@@ -67,7 +67,7 @@ Windows PowerShell:
 powershell -ExecutionPolicy ByPass -c "$h=@{Authorization='Bearer '+$env:GITHUB_TOKEN;Accept='application/vnd.github.raw'}; irm -Headers $h https://api.github.com/repos/flyingsquirrel0419/unlimited-search/contents/scripts/install.ps1 | iex"
 ```
 
-Alternatively, with GitHub CLI:
+GitHub CLI でもインストールできます。
 
 ```bash
 gh repo clone flyingsquirrel0419/unlimited-search ~/.unlimited-search
@@ -76,7 +76,7 @@ uv sync --no-dev
 scripts/install.sh update
 ```
 
-## Commands
+## コマンド
 
 ```bash
 unlimited-search serve
@@ -89,15 +89,15 @@ unlimited-search uninstall
 unlimited-search help
 ```
 
-Notes:
+メモ:
 
-- `read` returns content, trace, verdict, and metadata.
-- `diagnose` returns the compact trace without full content.
-- `media` uses `yt-dlp --dump-json` and does not download media.
-- `--max-attempts 0` skips the generic HTTP grid, which is useful for forcing content fallback smoke tests.
-- Fallback successes are intentionally reported as `weak_ok` or `suspect_ok`, not `strong_ok`.
+- `read` は content、trace、verdict、metadata を返します。
+- `diagnose` は完全な content を含まない compact trace を返します。
+- `media` は `yt-dlp --dump-json` を使い、メディアをダウンロードしません。
+- `--max-attempts 0` は汎用 HTTP grid をスキップするため、content fallback の smoke test に便利です。
+- fallback の成功は意図的に `strong_ok` ではなく `weak_ok` または `suspect_ok` として報告されます。
 
-## MCP Config
+## MCP 設定
 
 macOS / Linux:
 
@@ -131,7 +131,7 @@ Windows PowerShell:
 }
 ```
 
-## Development
+## 開発
 
 ```bash
 uv sync --extra dev
@@ -141,56 +141,38 @@ uv run unlimited-search serve
 uv run pytest
 ```
 
-## Tools
+## MCP ツール
 
 - `read_public_url`
 - `read_public_urls`
 - `diagnose_access`
 - `extract_media`
 
-## Verification Examples
+## 検証例
 
 ```bash
-# Public-route smoke
 uv run unlimited-search read https://en.wikipedia.org/wiki/OpenAI --max-content-chars 300
-
-# Jina fallback smoke
 uv run unlimited-search read https://example.com --no-public-routes --max-attempts 0 --max-content-chars 300
-
-# RSS fallback smoke
 uv run unlimited-search read https://xkcd.com/not-a-real-page --no-public-routes --max-attempts 0 --max-content-chars 300
-
-# Archive fallback smoke
 uv run unlimited-search read http://www.whitehouse.gov/1600/presidents/barackobama --no-public-routes --max-attempts 1 --max-content-chars 300
-
-# Full test suite
 uv run pytest
 ```
 
 ## Live Eval Set
 
-Use the live eval runner when changing routes or fallbacks and you want before/after evidence across real sites.
+route や fallback を変更したとき、実サイトで before/after の証拠を取りたい場合は live eval runner を使います。
 
 ```bash
-# Show eval cases
 uv run python scripts/run_eval.py --list
-
-# Run the full live set and write eval-results/eval-<timestamp>.jsonl
 uv run python scripts/run_eval.py
-
-# Also write human-readable reports
 uv run python scripts/run_eval.py --markdown eval-results/report.md --csv eval-results/report.csv
-
-# Run only stable/search routes
 uv run python scripts/run_eval.py --group stable --group search
-
-# Compare with a previous run
 uv run python scripts/run_eval.py --baseline eval-results/eval-20260707T000000Z.jsonl --fail-on-regression
 ```
 
-The default set lives in `scripts/eval_urls.yaml`. Difficult sites such as NamuWiki, TikTok, Naver Search, Amazon, and Google Scholar are marked optional so they produce warnings instead of failing the whole run when the remote site blocks or rate-limits automation.
+デフォルトの eval set は `scripts/eval_urls.yaml` にあります。NamuWiki、TikTok、Naver Search、Amazon、Google Scholar など難しいサイトは optional として扱われるため、リモート側のブロックや rate limit で全体の実行が失敗することはありません。
 
-## Project Docs
+## プロジェクト文書
 
 - [Platform coverage](PLATFORMS.md)
 - [Security](SECURITY.md)
