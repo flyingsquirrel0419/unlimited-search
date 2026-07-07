@@ -50,30 +50,16 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
 
 `unlimited-search` をインストールします。
 
-このリポジトリが private の場合、`GITHUB_TOKEN` にリポジトリ読み取り権限を持つ GitHub token が必要です。
-
 macOS / Linux:
 
 ```bash
-curl -fsSL \
-  -H "Authorization: Bearer $GITHUB_TOKEN" \
-  -H "Accept: application/vnd.github.raw" \
-  https://api.github.com/repos/flyingsquirrel0419/unlimited-search/contents/scripts/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/flyingsquirrel0419/unlimited-search/main/scripts/install.sh | sh
 ```
 
 Windows PowerShell:
 
 ```powershell
-powershell -ExecutionPolicy ByPass -c "$h=@{Authorization='Bearer '+$env:GITHUB_TOKEN;Accept='application/vnd.github.raw'}; irm -Headers $h https://api.github.com/repos/flyingsquirrel0419/unlimited-search/contents/scripts/install.ps1 | iex"
-```
-
-GitHub CLI でもインストールできます。
-
-```bash
-gh repo clone flyingsquirrel0419/unlimited-search ~/.unlimited-search
-cd ~/.unlimited-search
-uv sync --no-dev
-scripts/install.sh update
+powershell -ExecutionPolicy ByPass -c "irm https://raw.githubusercontent.com/flyingsquirrel0419/unlimited-search/main/scripts/install.ps1 | iex"
 ```
 
 ## コマンド
