@@ -18,11 +18,15 @@ def main(argv: list[str] | None = None) -> int:
     read_parser.add_argument("--max-attempts", type=int, default=12)
     read_parser.add_argument("--max-content-chars", type=int, default=120000)
     read_parser.add_argument("--no-public-routes", action="store_true")
+    read_parser.add_argument("--preferred-identity")
+    read_parser.add_argument("--success-selector", action="append", dest="success_selectors")
 
     diagnose_parser = subparsers.add_parser("diagnose")
     diagnose_parser.add_argument("url")
     diagnose_parser.add_argument("--timeout", type=int, default=25)
     diagnose_parser.add_argument("--max-attempts", type=int, default=12)
+    diagnose_parser.add_argument("--no-public-routes", action="store_true")
+    diagnose_parser.add_argument("--preferred-identity")
 
     media_parser = subparsers.add_parser("media")
     media_parser.add_argument("url")
@@ -41,6 +45,8 @@ def main(argv: list[str] | None = None) -> int:
                 max_attempts=args.max_attempts,
                 max_content_chars=args.max_content_chars,
                 enable_public_routes=not args.no_public_routes,
+                preferred_identity=args.preferred_identity,
+                success_selectors=args.success_selectors,
             ).to_dict()
         elif args.command == "diagnose":
             payload = reader.diagnose_access(
@@ -48,6 +54,8 @@ def main(argv: list[str] | None = None) -> int:
                 timeout=args.timeout,
                 max_attempts=args.max_attempts,
                 max_content_chars=2000,
+                enable_public_routes=not args.no_public_routes,
+                preferred_identity=args.preferred_identity,
             ).to_dict()
             payload["content"] = ""
         else:

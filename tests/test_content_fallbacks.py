@@ -1,7 +1,7 @@
 import json
 
 from unlimited_search.engine.content_fallbacks import extract_metadata, try_content_fallbacks
-from unlimited_search.engine.models import ResponseEnvelope
+from unlimited_search.engine.models import ResponseEnvelope, Verdict
 from unlimited_search.engine.reader import UnlimitedSearchReader
 from unlimited_search.engine.transport import TransportResult
 
@@ -20,7 +20,7 @@ class FakeTransport:
 
 
 def test_jina_json_content_fallback_succeeds() -> None:
-    jina_url = "https://r.jina.ai/http://https://example.com/post"
+    jina_url = "https://r.jina.ai/https://example.com/post"
     transport = FakeTransport(
         {
             jina_url: ResponseEnvelope(
@@ -50,7 +50,7 @@ def test_jina_json_content_fallback_succeeds() -> None:
 
 
 def test_jina_alternate_feed_fallback_succeeds() -> None:
-    jina_url = "https://r.jina.ai/http://https://example.com"
+    jina_url = "https://r.jina.ai/https://example.com"
     feed_url = "https://example.com/feed.xml"
     transport = FakeTransport(
         {
@@ -89,7 +89,7 @@ def test_jina_alternate_feed_fallback_succeeds() -> None:
 
 
 def test_origin_feed_candidate_fallback_succeeds_without_jina_alternate() -> None:
-    jina_url = "https://r.jina.ai/http://https://example.com/article"
+    jina_url = "https://r.jina.ai/https://example.com/article"
     feed_url = "https://example.com/feed"
     transport = FakeTransport(
         {
@@ -129,7 +129,7 @@ def test_metadata_salvage_extracts_ogp_and_json_ld() -> None:
 
 def test_metadata_salvage_does_not_accept_challenge_title_only() -> None:
     url = "https://blocked.example"
-    jina_url = "https://r.jina.ai/http://https://blocked.example"
+    jina_url = "https://r.jina.ai/https://blocked.example"
     transport = FakeTransport(
         {
             jina_url: ResponseEnvelope(403, "blocked", jina_url),
@@ -148,7 +148,7 @@ def test_metadata_salvage_does_not_accept_challenge_title_only() -> None:
 
 def test_reader_uses_content_fallback_after_exhaustion() -> None:
     url = "https://example.com/post"
-    jina_url = "https://r.jina.ai/http://https://example.com/post"
+    jina_url = "https://r.jina.ai/https://example.com/post"
     reader = UnlimitedSearchReader()
     reader.transport = FakeTransport(  # type: ignore[assignment]
         {
@@ -165,6 +165,27 @@ def test_reader_uses_content_fallback_after_exhaustion() -> None:
     result = reader.read_public_url(url, enable_public_routes=False, max_attempts=0)
 
     assert result.ok is True
+    assert result.verdict == Verdict.WEAK_OK
     assert result.summary == "content fallback succeeded: jina-json"
     assert result.metadata["platform"] == "content-fallback"
     assert result.metadata["route"] == "jina-json"
+    assert result.metadata["fallback_verdict"] == "weak_ok"
+    assert result.metadata["recovery_fallbacks"]["content_fallback"] == "hit"
+
+
+def test_reader_records_recovery_metadata_when_fallbacks_are_exhausted() -> None:
+    reader = UnlimitedSearchReader()
+    reader.transport = FakeTransport({})  # type: ignore[assignment]
+
+    result = reader.read_public_url(
+        "https://example.com/missing",
+        enable_public_routes=False,
+        max_attempts=0,
+    )
+
+    assert result.ok is False
+    assert result.metadata["recovery_fallbacks"] == {
+        "gate_stop_reason": "exhausted",
+        "content_fallback": "miss",
+        "archive_fallback": "miss",
+    }

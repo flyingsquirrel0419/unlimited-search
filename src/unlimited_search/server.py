@@ -40,10 +40,12 @@ def read_public_url(
 @mcp.tool()
 def read_public_urls(
     urls: list[str],
+    success_selectors: list[str] | None = None,
     timeout: int = 25,
     max_attempts: int = 8,
     max_content_chars: int = 60000,
     enable_public_routes: bool = True,
+    preferred_identity: str | None = None,
 ) -> dict[str, Any]:
     """Read multiple public URLs, reusing host sessions within one tool call."""
     reader = _reader()
@@ -53,6 +55,8 @@ def read_public_urls(
         max_attempts=max_attempts,
         max_content_chars=max_content_chars,
         enable_public_routes=enable_public_routes,
+        preferred_identity=preferred_identity,
+        success_selectors=success_selectors,
     )
     return {
         "count": len(results),
@@ -66,6 +70,7 @@ def diagnose_access(
     timeout: int = 25,
     max_attempts: int = 12,
     enable_public_routes: bool = True,
+    preferred_identity: str | None = None,
 ) -> dict[str, Any]:
     """Return a compact access diagnosis and attempt trace for one public URL."""
     result = _reader().diagnose_access(
@@ -74,6 +79,7 @@ def diagnose_access(
         max_attempts=max_attempts,
         max_content_chars=2000,
         enable_public_routes=enable_public_routes,
+        preferred_identity=preferred_identity,
     )
     data = result.to_dict()
     data["content"] = ""

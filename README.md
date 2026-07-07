@@ -8,7 +8,7 @@ Python MCP server and CLI for reading public web content through public-only rou
 
 `read_public_url` tries these layers in order:
 
-1. Platform public routes for known sites such as Reddit, X/Twitter, Bluesky, Hacker News, Stack Overflow, Wikipedia, GitHub, npm, PyPI, Wayback, and others.
+1. Platform public routes for known sites such as Reddit, X/Twitter, Bluesky, Hacker News, Google News, Stack Overflow, Wikipedia, GitHub, npm, PyPI, Wayback, and others.
 2. A generic HTTP grid with browser-like TLS identities, URL variants, referer strategies, response validation, and HTTP/1.1 curl fallback for selected transport failures.
 3. Non-browser content fallbacks:
    - Jina Reader JSON content
@@ -93,6 +93,7 @@ Notes:
 - `diagnose` returns the compact trace without full content.
 - `media` uses `yt-dlp --dump-json` and does not download media.
 - `--max-attempts 0` skips the generic HTTP grid, which is useful for forcing content fallback smoke tests.
+- Fallback successes are intentionally reported as `weak_ok` or `suspect_ok`, not `strong_ok`.
 
 ## MCP Config
 

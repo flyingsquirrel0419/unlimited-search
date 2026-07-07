@@ -128,7 +128,7 @@ def test_reader_uses_archive_fallback_for_not_found() -> None:
     reader.transport = FakeTransport(  # type: ignore[assignment]
         {
             url: ResponseEnvelope(404, "not found", url),
-            "https://r.jina.ai/http://https://example.com/missing": ResponseEnvelope(404, "not found", "https://r.jina.ai/http://https://example.com/missing"),
+            "https://r.jina.ai/https://example.com/missing": ResponseEnvelope(404, "not found", "https://r.jina.ai/https://example.com/missing"),
             "https://example.com/rss": None,
             "https://example.com/feed": None,
             "https://example.com/atom.xml": None,

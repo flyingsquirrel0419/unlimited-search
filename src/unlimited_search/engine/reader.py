@@ -55,17 +55,18 @@ class UnlimitedSearchReader:
                             url=url,
                             status=route_attempt.status,
                             body_size=route_attempt.bytes,
-                            verdict=Verdict.STRONG_OK if route_attempt.ok else Verdict.BLOCKED,
+                            verdict=_public_route_verdict(route_result.platform) if route_attempt.ok else Verdict.BLOCKED,
                             reasons=[route_attempt.note] if route_attempt.note else [],
                         )
                     )
                 if route_result.ok:
                     content = _trim(route_result.content, max_content_chars)
+                    verdict = _public_route_verdict(route_result.platform)
                     return FetchResult(
                         ok=True,
                         content=content,
                         final_url=route_result.final_url,
-                        verdict=Verdict.STRONG_OK,
+                        verdict=verdict,
                         summary=f"public route succeeded: {route_result.platform}:{route_result.route}",
                         trace=trace,
                         stop_reason="success",
@@ -231,10 +232,17 @@ def _with_recovery_fallbacks(
     max_content_chars: int | None,
     last_response: ResponseEnvelope | None,
 ) -> FetchResult:
+    recovery = {
+        "gate_stop_reason": failure.stop_reason,
+        "content_fallback": "skipped",
+        "archive_fallback": "skipped",
+    }
     if failure.stop_reason in {Verdict.AUTH_REQUIRED.value, Verdict.UNSAFE_URL.value}:
+        failure.metadata["recovery_fallbacks"] = recovery
         return failure
 
     if failure.stop_reason != Verdict.NOT_FOUND.value:
+        recovery["content_fallback"] = "tried"
         fallback = try_content_fallbacks(
             original_url,
             transport,
@@ -243,6 +251,7 @@ def _with_recovery_fallbacks(
             last_response=last_response,
         )
         if fallback is not None:
+            recovery["content_fallback"] = "hit"
             return _fallback_fetch_result(
                 failure,
                 platform="content-fallback",
@@ -254,8 +263,11 @@ def _with_recovery_fallbacks(
                 attempts=[attempt.to_dict() for attempt in fallback.attempts],
                 metadata=fallback.metadata,
                 reason="content_fallback",
+                recovery=recovery,
             )
+        recovery["content_fallback"] = "miss"
 
+    recovery["archive_fallback"] = "tried"
     archive = try_archive_fallback(
         original_url,
         transport,
@@ -263,6 +275,7 @@ def _with_recovery_fallbacks(
         max_content_chars=max_content_chars,
     )
     if archive is not None:
+        recovery["archive_fallback"] = "hit"
         return _fallback_fetch_result(
             failure,
             platform="archive-fallback",
@@ -274,8 +287,11 @@ def _with_recovery_fallbacks(
             attempts=[attempt.to_dict() for attempt in archive.attempts],
             metadata=archive.metadata,
             reason="archive_fallback",
+            recovery=recovery,
         )
 
+    recovery["archive_fallback"] = "miss"
+    failure.metadata["recovery_fallbacks"] = recovery
     return failure
 
 
@@ -291,9 +307,11 @@ def _fallback_fetch_result(
     attempts: list[dict[str, object]],
     metadata: dict[str, object],
     reason: str,
+    recovery: dict[str, str],
 ) -> FetchResult:
     trace = list(failure.trace)
     last_attempt = attempts[-1] if attempts else {}
+    verdict = _fallback_verdict(platform, route)
     trace.append(
         Attempt(
             phase=phase,
@@ -301,7 +319,7 @@ def _fallback_fetch_result(
             url=source_url,
             status=int(last_attempt.get("status") or 0),
             body_size=len(content.encode("utf-8", "ignore")),
-            verdict=Verdict.STRONG_OK,
+            verdict=verdict,
             reasons=[reason],
         )
     )
@@ -309,7 +327,7 @@ def _fallback_fetch_result(
         ok=True,
         content=content,
         final_url=source_url,
-        verdict=Verdict.STRONG_OK,
+        verdict=verdict,
         summary=f"{platform.replace('-', ' ')} succeeded: {route}",
         trace=trace,
         stop_reason="success",
@@ -320,9 +338,18 @@ def _fallback_fetch_result(
             "source_url": source_url,
             "content_type": content_type,
             "fallback_attempts": attempts,
+            "fallback_verdict": verdict.value,
+            "origin_stop_reason": failure.stop_reason,
+            "recovery_fallbacks": dict(recovery),
             **metadata,
         },
     )
+
+
+def _fallback_verdict(platform: str, route: str) -> Verdict:
+    if platform == "content-fallback" and route == "metadata-salvage":
+        return Verdict.SUSPECT_OK
+    return Verdict.WEAK_OK
 
 
 def _trim(text: str, max_chars: int | None) -> str:
@@ -340,3 +367,23 @@ def _transport_name(response: ResponseEnvelope) -> str:
         if key.lower() == "x-unlimited-search-transport":
             return value
     return "curl_cffi"
+
+
+def _public_route_verdict(platform: str) -> Verdict:
+    weak_platforms = {
+        "jina-reader",
+        "youtube",
+        "vimeo",
+        "soundcloud",
+        "twitch",
+        "tiktok",
+        "dailymotion",
+        "rumble",
+        "naver-tv",
+        "kakao",
+        "chzzk",
+        "soop",
+    }
+    if platform in weak_platforms:
+        return Verdict.WEAK_OK
+    return Verdict.STRONG_OK

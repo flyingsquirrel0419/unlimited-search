@@ -6,7 +6,7 @@ import re
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 from typing import Any
-from urllib.parse import urljoin, urlsplit
+from urllib.parse import quote, urljoin, urlsplit
 
 from bs4 import BeautifulSoup
 
@@ -59,7 +59,7 @@ def try_content_fallbacks(
     attempts: list[ContentFallbackAttempt] = []
     feed_candidates: list[str] = []
 
-    jina_url = _jina_url(url)
+    jina_url = jina_reader_url(url)
     jina_result = transport.get(
         jina_url,
         identity="safari",
@@ -153,6 +153,10 @@ def _parse_jina_json(text: str) -> dict[str, Any] | None:
         return None
     data = payload.get("data") if isinstance(payload, dict) else None
     return data if isinstance(data, dict) else None
+
+
+def jina_reader_url(url: str) -> str:
+    return f"https://r.jina.ai/{quote(url, safe=':/?&=%#')}"
 
 
 def _alternate_feed_urls(data: dict[str, Any]) -> list[str]:

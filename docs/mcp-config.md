@@ -78,6 +78,7 @@ The MCP server exposes:
 
 - `metadata.platform = "content-fallback"` with routes such as `jina-json`, `rss-discovery`, or `metadata-salvage`
 - `metadata.platform = "archive-fallback"` with routes such as `wayback-available`, `wayback-latest`, `wayback-cdx`, or `archive-today`
+- `metadata.fallback_verdict` to distinguish recovered content from direct strong reads
 
 `diagnose_access` omits full content and is better for debugging blocked, challenged, or rate-limited URLs.
 

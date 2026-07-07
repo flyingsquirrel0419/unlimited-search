@@ -3,8 +3,9 @@ from __future__ import annotations
 import json
 import re
 from dataclasses import dataclass, field
-from urllib.parse import parse_qs, quote, unquote, urlsplit
+from urllib.parse import parse_qs, quote, unquote, urlencode, urlsplit
 
+from .content_fallbacks import jina_reader_url
 from .media import extract_media_metadata
 from .models import ResponseEnvelope
 from .transport import PublicTransport
@@ -184,7 +185,15 @@ def _api_plan(url: str) -> tuple[str, list[tuple[str, str]]] | None:
         item_id = query.get("id", [""])[0]
         if item_id:
             return ("hacker-news", [("algolia-item", f"https://hn.algolia.com/api/v1/items/{quote(item_id, safe='')}")])
+        search = query.get("q", [""])[0] or query.get("query", [""])[0]
+        if search:
+            return ("hacker-news", [("algolia-search", _hn_search_url(search))])
         return ("hacker-news", [("firebase-topstories", "https://hacker-news.firebaseio.com/v0/topstories.json")])
+
+    if host == "hn.algolia.com":
+        search = query.get("q", [""])[0] or query.get("query", [""])[0]
+        if search:
+            return ("hacker-news", [("algolia-search", _hn_search_url(search))])
 
     if host == "stackoverflow.com":
         site = "stackoverflow"
@@ -274,6 +283,12 @@ def _api_plan(url: str) -> tuple[str, list[tuple[str, str]]] | None:
         if search:
             return ("openlibrary", [("search-json", f"https://openlibrary.org/search.json?q={quote(search, safe='')}&limit=10")])
 
+    if host == "github.com" and parts[:1] == ["search"]:
+        search = query.get("q", [""])[0]
+        if search:
+            kind = query.get("type", ["repositories"])[0]
+            return ("github", [(_github_search_route(kind), _github_search_url(search, kind))])
+
     if host == "github.com" and len(parts) >= 2 and parts[0] not in GITHUB_RESERVED_PATHS:
         owner, repo = quote(parts[0], safe=""), quote(parts[1], safe="")
         if len(parts) >= 3 and parts[2] == "releases":
@@ -281,6 +296,11 @@ def _api_plan(url: str) -> tuple[str, list[tuple[str, str]]] | None:
         if len(parts) >= 3 and parts[2] == "issues":
             return ("github", [("issues", f"https://api.github.com/repos/{owner}/{repo}/issues?per_page=10")])
         return ("github", [("repo", f"https://api.github.com/repos/{owner}/{repo}")])
+
+    if host == "news.google.com" and parts[:1] == ["search"]:
+        search = query.get("q", [""])[0]
+        if search:
+            return ("google-news", [("rss-search", _google_news_search_url(search, query))])
 
     if host == "npmjs.com" and len(parts) >= 2 and parts[0] == "package":
         package = "/".join(parts[1:3]) if parts[1].startswith("@") and len(parts) >= 3 else parts[1]
@@ -309,7 +329,7 @@ def _api_plan(url: str) -> tuple[str, list[tuple[str, str]]] | None:
         )
 
     if _should_use_jina(url):
-        return ("jina-reader", [("reader", f"https://r.jina.ai/http://{url}")])
+        return ("jina-reader", [("reader", jina_reader_url(url))])
 
     return None
 
@@ -349,6 +369,38 @@ def _public_api_response_ok(response: ResponseEnvelope) -> bool:
     if lowered.startswith("title:") or "url source:" in lowered:
         return True
     return response.body_size >= 350
+
+
+def _hn_search_url(search: str) -> str:
+    return "https://hn.algolia.com/api/v1/search?" + urlencode(
+        {"query": search, "tags": "story", "hitsPerPage": "10"}
+    )
+
+
+def _github_search_route(kind: str) -> str:
+    normalized = kind.lower()
+    if normalized in {"code", "commits", "issues", "topics", "users"}:
+        return f"search-{normalized}"
+    return "search-repositories"
+
+
+def _github_search_url(search: str, kind: str) -> str:
+    normalized = kind.lower()
+    if normalized in {"code", "commits", "issues", "topics", "users"}:
+        endpoint = normalized
+    else:
+        endpoint = "repositories"
+    return f"https://api.github.com/search/{endpoint}?" + urlencode({"q": search, "per_page": "10"})
+
+
+def _google_news_search_url(search: str, query: dict[str, list[str]]) -> str:
+    params = {
+        "q": search,
+        "hl": query.get("hl", ["en-US"])[0],
+        "gl": query.get("gl", ["US"])[0],
+        "ceid": query.get("ceid", ["US:en"])[0],
+    }
+    return "https://news.google.com/rss/search?" + urlencode(params)
 
 
 def _normalized_host(url: str) -> str:

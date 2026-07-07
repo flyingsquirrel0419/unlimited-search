@@ -20,7 +20,7 @@ These source URLs are converted to public API or feed URLs before the generic fe
 | Reddit | `reddit.com/r/{subreddit}`, comments URLs | RSS first, JSON fallback |
 | Bluesky | `bsky.app/profile/{actor}` | AT Protocol profile, author feed |
 | Mastodon | known public instances such as `fosstodon.org/@user` | instance info, account lookup |
-| Hacker News | `news.ycombinator.com`, `news.ycombinator.com/item?id=...` | Firebase top stories, Algolia item |
+| Hacker News | `news.ycombinator.com`, `news.ycombinator.com/item?id=...`, `hn.algolia.com/?q=...` | Firebase top stories, Algolia item/search |
 | Stack Overflow | question, tag, search, and questions pages | Stack Exchange API v2.3 |
 | Lobste.rs | front page, tag, story URLs | JSON endpoints |
 | V2EX | front page, node URLs | JSON endpoints |
@@ -29,7 +29,8 @@ These source URLs are converted to public API or feed URLs before the generic fe
 | DOI/CrossRef | `doi.org/{doi}` | CrossRef works API |
 | Wikipedia | `{lang}.wikipedia.org/wiki/{title}` | REST page summary |
 | OpenLibrary | ISBN, works, search URLs | OpenLibrary JSON APIs |
-| GitHub | `github.com/{owner}/{repo}` releases/issues | GitHub REST API |
+| GitHub | `github.com/{owner}/{repo}` releases/issues, `github.com/search?q=...` | GitHub REST/search API |
+| Google News | `news.google.com/search?q=...` | Google News RSS search |
 | npm | `npmjs.com/package/{package}` | npm registry latest |
 | PyPI | `pypi.org/project/{package}` | PyPI JSON |
 | Wayback | archived `web.archive.org/web/.../{url}` URLs | CDX API |
@@ -73,6 +74,7 @@ Fallback success is reported as:
 - `metadata.platform = "content-fallback"`
 - `metadata.route = "jina-json"`, `"rss-discovery"`, or `"metadata-salvage"`
 - `metadata.content_type = "markdown"`, `"feed_json"`, or `"metadata_json"`
+- `metadata.fallback_verdict = "weak_ok"` for content recovery or `"suspect_ok"` for metadata-only salvage
 
 `--max-attempts 0` skips the generic HTTP grid and is useful for fallback smoke tests.
 
@@ -90,6 +92,7 @@ Archive fallback success is reported as:
 - `metadata.platform = "archive-fallback"`
 - `metadata.route = "wayback-available"`, `"wayback-latest"`, `"wayback-cdx"`, or `"archive-today"`
 - `metadata.content_type = "archive_html"`
+- `metadata.fallback_verdict = "weak_ok"`
 
 Archive content may be stale or transformed compared with the live page.
 

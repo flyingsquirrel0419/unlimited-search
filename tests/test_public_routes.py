@@ -52,6 +52,17 @@ def test_hacker_news_item_routes_to_algolia() -> None:
     assert transport.urls == ["https://hn.algolia.com/api/v1/items/123"]
 
 
+def test_hacker_news_search_routes_to_algolia_search() -> None:
+    transport = FakeTransport()
+    result = try_public_route("https://hn.algolia.com/?q=python", transport)  # type: ignore[arg-type]
+
+    assert result is not None
+    assert result.ok is True
+    assert result.platform == "hacker-news"
+    assert result.route == "algolia-search"
+    assert transport.urls == ["https://hn.algolia.com/api/v1/search?query=python&tags=story&hitsPerPage=10"]
+
+
 def test_stackoverflow_question_routes_to_stack_exchange_api() -> None:
     transport = FakeTransport()
     result = try_public_route("https://stackoverflow.com/questions/11227809/why-is-processing-a-sorted-array-faster", transport)  # type: ignore[arg-type]
@@ -82,7 +93,29 @@ def test_jina_reader_route_for_medium() -> None:
     assert result.ok is True
     assert result.platform == "jina-reader"
     assert result.route == "reader"
-    assert transport.urls == ["https://r.jina.ai/http://https://medium.com/example/post"]
+    assert transport.urls == ["https://r.jina.ai/https://medium.com/example/post"]
+
+
+def test_github_search_routes_to_search_api() -> None:
+    transport = FakeTransport()
+    result = try_public_route("https://github.com/search?q=unlimited+search&type=repositories", transport)  # type: ignore[arg-type]
+
+    assert result is not None
+    assert result.ok is True
+    assert result.platform == "github"
+    assert result.route == "search-repositories"
+    assert transport.urls == ["https://api.github.com/search/repositories?q=unlimited+search&per_page=10"]
+
+
+def test_google_news_search_routes_to_rss() -> None:
+    transport = FakeTransport()
+    result = try_public_route("https://news.google.com/search?q=openai", transport)  # type: ignore[arg-type]
+
+    assert result is not None
+    assert result.ok is True
+    assert result.platform == "google-news"
+    assert result.route == "rss-search"
+    assert transport.urls == ["https://news.google.com/rss/search?q=openai&hl=en-US&gl=US&ceid=US%3Aen"]
 
 
 def test_wayback_archive_routes_to_cdx() -> None:
