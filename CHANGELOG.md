@@ -13,5 +13,5 @@ All notable changes to `unlimited-search` will be documented here.
 - Added browser-like HTTP fetching with TLS impersonation through `curl_cffi`.
 - Added HTTP/1.1 curl fallback for timeout and HTTP/2 failure cases.
 - Added SSRF checks for private, loopback, link-local, and metadata redirects.
-- Added PyPI package installation docs and tag-triggered publish workflow with deploy/update release summaries.
+- Added PyPI package installation docs and tag-triggered publish workflow.
 - Refreshed user docs, platform coverage, troubleshooting guidance, MCP config notes, and GitHub templates.
