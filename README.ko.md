@@ -6,7 +6,7 @@
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)](pyproject.toml)
 
-<p align="center"><strong>불가능은 없습니다. 공개된 것이라면 unlimited-search가 읽을 수 있는 길을 찾습니다.</strong></p>
+<p align="center"><strong>공개 페이지는 복잡합니다. unlimited-search는 그것을 MCP-ready 텍스트로 바꿉니다.</strong></p>
 
 <p align="center">
   <img src="assets/hero.png" width="860" alt="unlimited-search가 공개 URL을 routes, HTTP, RSS, archives, media 경로로 처리해 MCP와 CLI용 구조화 텍스트로 반환하는 히어로 이미지.">

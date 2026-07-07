@@ -6,7 +6,7 @@
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)](pyproject.toml)
 
-<p align="center"><strong>没有什么不可能。只要是公开内容，unlimited-search 就会找到可读路径。</strong></p>
+<p align="center"><strong>公开网页往往很杂乱。unlimited-search 会把它们转换成 MCP-ready 文本。</strong></p>
 
 <p align="center">
   <img src="assets/hero.png" width="860" alt="unlimited-search hero，展示公开 URL 通过 routes、HTTP、RSS、archives 和 media 转换为适用于 MCP 与 CLI 的结构化文本。">
