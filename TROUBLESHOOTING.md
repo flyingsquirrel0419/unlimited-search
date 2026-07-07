@@ -2,34 +2,20 @@
 
 ## `unlimited-search` command not found
 
-Add the install bin directory to `PATH`.
-
-macOS / Linux default:
+Confirm the package is installed and that Python's script directory is on `PATH`.
 
 ```bash
-export PATH="$HOME/.local/bin:$PATH"
+python -m pip install unlimited-search
+unlimited-search help
 ```
 
-## `uv` command not found
+## Package install fails
 
-Install `uv`.
-
-macOS / Linux:
+Upgrade packaging tools, then retry.
 
 ```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
-
-macOS Homebrew:
-
-```bash
-brew install uv
-```
-
-Windows PowerShell:
-
-```powershell
-powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+python -m pip install --upgrade pip
+python -m pip install unlimited-search
 ```
 
 ## 403, 429, or Timeout

@@ -28,38 +28,22 @@ See [Platform coverage](PLATFORMS.md) for the current support matrix and known g
 
 ## Install
 
-Install `uv` first:
-
-macOS / Linux:
+Install from PyPI:
 
 ```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
+python -m pip install unlimited-search
 ```
 
-macOS Homebrew:
+Update:
 
 ```bash
-brew install uv
+python -m pip install --upgrade unlimited-search
 ```
 
-Windows PowerShell:
-
-```powershell
-powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-```
-
-Install `unlimited-search`.
-
-macOS / Linux:
+Remove:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/flyingsquirrel0419/unlimited-search/main/scripts/install.sh | sh
-```
-
-Windows PowerShell:
-
-```powershell
-powershell -ExecutionPolicy ByPass -c "irm https://raw.githubusercontent.com/flyingsquirrel0419/unlimited-search/main/scripts/install.ps1 | iex"
+python -m pip uninstall unlimited-search
 ```
 
 ## Commands
@@ -70,8 +54,6 @@ unlimited-search read https://example.com
 unlimited-search read https://example.com --max-attempts 0
 unlimited-search diagnose https://example.com
 unlimited-search media https://www.youtube.com/watch?v=dQw4w9WgXcQ
-unlimited-search update
-unlimited-search uninstall
 unlimited-search help
 ```
 
@@ -85,33 +67,12 @@ Notes:
 
 ## MCP Config
 
-macOS / Linux:
-
 ```json
 {
   "mcpServers": {
     "unlimited-search": {
       "command": "unlimited-search",
       "args": ["serve"]
-    }
-  }
-}
-```
-
-Windows PowerShell:
-
-```json
-{
-  "mcpServers": {
-    "unlimited-search": {
-      "command": "powershell",
-      "args": [
-        "-ExecutionPolicy",
-        "ByPass",
-        "-File",
-        "C:\\Users\\YOU\\.local\\bin\\unlimited-search.ps1",
-        "serve"
-      ]
     }
   }
 }

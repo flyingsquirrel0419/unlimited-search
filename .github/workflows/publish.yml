@@ -1,0 +1,119 @@
+name: publish
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: uv sync --extra dev
+      - name: Run tests
+        run: uv run pytest
+      - name: Build package
+        run: uv build
+      - name: Plan PyPI release
+        id: release-plan
+        run: |
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          import os
+          import tomllib
+          import urllib.error
+          import urllib.request
+
+          with open("pyproject.toml", "rb") as f:
+              project = tomllib.load(f)["project"]
+
+          name = project["name"]
+          version = project["version"]
+          expected_tag = f"v{version}"
+          actual_tag = os.environ.get("GITHUB_REF_NAME", "")
+          url = f"https://pypi.org/pypi/{name}/json"
+
+          try:
+              with urllib.request.urlopen(url, timeout=20) as response:
+                  data = json.load(response)
+          except urllib.error.HTTPError as exc:
+              if exc.code == 404:
+                  print(f"package={name}")
+                  print(f"version={version}")
+                  print(f"expected_tag={expected_tag}")
+                  print(f"actual_tag={actual_tag}")
+                  print(f"tag_matches={str(actual_tag == expected_tag).lower()}")
+                  print("release_action=deploy")
+                  print("version_exists=false")
+                  print("pypi_state=missing")
+                  raise SystemExit(0)
+              raise
+
+          releases = data.get("releases", {})
+          version_exists = version in releases
+          print(f"package={name}")
+          print(f"version={version}")
+          print(f"expected_tag={expected_tag}")
+          print(f"actual_tag={actual_tag}")
+          print(f"tag_matches={str(actual_tag == expected_tag).lower()}")
+          print("release_action=update")
+          print(f"version_exists={str(version_exists).lower()}")
+          print("pypi_state=exists")
+          PY
+      - name: Write release summary
+        run: |
+          {
+            echo "## PyPI release plan"
+            echo ""
+            echo "| Field | Value |"
+            echo "| --- | --- |"
+            echo "| Package | \`${{ steps.release-plan.outputs.package }}\` |"
+            echo "| Version | \`${{ steps.release-plan.outputs.version }}\` |"
+            echo "| Tag | \`${{ steps.release-plan.outputs.actual_tag }}\` |"
+            echo "| Expected tag | \`${{ steps.release-plan.outputs.expected_tag }}\` |"
+            echo "| PyPI project | \`${{ steps.release-plan.outputs.pypi_state }}\` |"
+            echo "| Action | \`${{ steps.release-plan.outputs.release_action }}\` |"
+            echo "| Tag matches version | \`${{ steps.release-plan.outputs.tag_matches }}\` |"
+            echo "| Version already exists | \`${{ steps.release-plan.outputs.version_exists }}\` |"
+            echo ""
+            if [ "${{ steps.release-plan.outputs.tag_matches }}" != "true" ]; then
+              echo "The tag must match the project version before publishing."
+            elif [ "${{ steps.release-plan.outputs.version_exists }}" = "true" ]; then
+              echo "This version is already present on PyPI. PyPI does not allow replacing an existing distribution, so publish is blocked."
+            else
+              echo "Publishing will continue with the planned action."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Stop if tag does not match project version
+        if: steps.release-plan.outputs.tag_matches != 'true'
+        run: |
+          echo "Tag ${{ steps.release-plan.outputs.actual_tag }} does not match pyproject version ${{ steps.release-plan.outputs.version }}." >&2
+          echo "Expected tag: ${{ steps.release-plan.outputs.expected_tag }}" >&2
+          exit 1
+      - name: Stop if version already exists
+        if: steps.release-plan.outputs.version_exists == 'true'
+        run: |
+          echo "Version ${{ steps.release-plan.outputs.version }} already exists on PyPI for ${{ steps.release-plan.outputs.package }}." >&2
+          exit 1
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
+      - name: Write publish summary
+        run: |
+          {
+            echo ""
+            echo "## PyPI publish result"
+            echo ""
+            echo "Published \`${{ steps.release-plan.outputs.package }}==${{ steps.release-plan.outputs.version }}\` with action \`${{ steps.release-plan.outputs.release_action }}\`."
+          } >> "$GITHUB_STEP_SUMMARY"
