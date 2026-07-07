@@ -1,15 +1,15 @@
 # unlimited-search
 
-[English](README.md) | [한국어](README.ko.md) | 中文 | [日本語](README.ja.md) | [Español](README.es.md)
+[English](https://github.com/flyingsquirrel0419/unlimited-search/blob/main/README.md) | [한국어](https://github.com/flyingsquirrel0419/unlimited-search/blob/main/README.ko.md) | 中文 | [日本語](https://github.com/flyingsquirrel0419/unlimited-search/blob/main/README.ja.md) | [Español](https://github.com/flyingsquirrel0419/unlimited-search/blob/main/README.es.md)
 
 [![test](https://github.com/flyingsquirrel0419/unlimited-search/actions/workflows/test.yml/badge.svg)](https://github.com/flyingsquirrel0419/unlimited-search/actions/workflows/test.yml)
-[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
-[![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)](pyproject.toml)
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](https://github.com/flyingsquirrel0419/unlimited-search/blob/main/LICENSE)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://github.com/flyingsquirrel0419/unlimited-search/blob/main/pyproject.toml)
 
 <p align="center"><strong>把公开页面转化为可用信号。</strong></p>
 
 <p align="center">
-  <img src="assets/hero.png" width="860" alt="unlimited-search hero，展示公开 URL 通过 routes、HTTP、RSS、archives 和 media 转换为适用于 MCP 与 CLI 的结构化文本。">
+  <img src="https://raw.githubusercontent.com/flyingsquirrel0419/unlimited-search/main/assets/hero.png" width="860" alt="unlimited-search hero，展示公开 URL 通过 routes、HTTP、RSS、archives 和 media 转换为适用于 MCP 与 CLI 的结构化文本。">
 </p>
 
 `unlimited-search` 是一个 Python CLI 和 MCP 服务器，用于在普通 direct fetch 不够时读取公开网页内容。它把平台公开路由、类似浏览器的 HTTP identity、内容 fallback、公开 archive fallback 和媒体元数据提取整合为一个本地工具。
@@ -51,7 +51,7 @@ unlimited-search read https://en.wikipedia.org/wiki/OpenAI --max-content-chars 8
 | 媒体 metadata | 使用 `yt-dlp --dump-json` 提取公开媒体 metadata，不下载媒体。 |
 | MCP 工具 | 向 MCP 客户端暴露单 URL 读取、批量读取、诊断和媒体提取工具。 |
 
-完整支持矩阵和已知限制见 [Platform coverage](PLATFORMS.md)。
+完整支持矩阵和已知限制见 [Platform coverage](https://github.com/flyingsquirrel0419/unlimited-search/blob/main/PLATFORMS.md)。
 
 ## 安装
 
@@ -133,12 +133,12 @@ unlimited-search serve
 | `diagnose_access` | 返回 compact diagnosis 和 attempt trace，不包含完整 content。 |
 | `extract_media` | 通过 `yt-dlp` 提取公开媒体 metadata，不下载媒体。 |
 
-更多配置示例见 [MCP configuration](docs/mcp-config.md)。
+更多配置示例见 [MCP configuration](https://github.com/flyingsquirrel0419/unlimited-search/blob/main/docs/mcp-config.md)。
 
 ## 读取方式
 
 <p align="center">
-  <img src="assets/pipeline.png" width="860" alt="Pipeline diagram：Public URL 依次经过 platform routes、HTTP grid、content fallbacks、archive fallbacks、media metadata 到 clean public text；login、paywall 或 CAPTCHA 会安全停止。">
+  <img src="https://raw.githubusercontent.com/flyingsquirrel0419/unlimited-search/main/assets/pipeline.png" width="860" alt="Pipeline diagram：Public URL 依次经过 platform routes、HTTP grid、content fallbacks、archive fallbacks、media metadata 到 clean public text；login、paywall 或 CAPTCHA 会安全停止。">
 </p>
 
 `read_public_url` 会先尝试最小侵入的公开 route，然后逐步扩大恢复路径：
@@ -186,17 +186,17 @@ uv run python scripts/run_eval.py --markdown eval-results/report.md --csv eval-r
 uv run python scripts/run_eval.py --baseline eval-results/eval-20260707T000000Z.jsonl --fail-on-regression
 ```
 
-默认 eval case 位于 [scripts/eval_urls.yaml](scripts/eval_urls.yaml)。NamuWiki、TikTok、Naver Search、Amazon、Google Scholar 等困难站点是 optional，因此远端阻断或 rate limit 不会导致整个运行失败。
+默认 eval case 位于 [scripts/eval_urls.yaml](https://github.com/flyingsquirrel0419/unlimited-search/blob/main/scripts/eval_urls.yaml)。NamuWiki、TikTok、Naver Search、Amazon、Google Scholar 等困难站点是 optional，因此远端阻断或 rate limit 不会导致整个运行失败。
 
 ## 项目文档
 
-- [Platform coverage](PLATFORMS.md)
-- [MCP configuration](docs/mcp-config.md)
-- [Troubleshooting](TROUBLESHOOTING.md)
-- [Security](SECURITY.md)
-- [Contributing](CONTRIBUTING.md)
-- [Code of conduct](CODE_OF_CONDUCT.md)
-- [Disclaimer](DISCLAIMER.md)
-- [Privacy](PRIVACY.md)
-- [Changelog](CHANGELOG.md)
-- [License](LICENSE)
+- [Platform coverage](https://github.com/flyingsquirrel0419/unlimited-search/blob/main/PLATFORMS.md)
+- [MCP configuration](https://github.com/flyingsquirrel0419/unlimited-search/blob/main/docs/mcp-config.md)
+- [Troubleshooting](https://github.com/flyingsquirrel0419/unlimited-search/blob/main/TROUBLESHOOTING.md)
+- [Security](https://github.com/flyingsquirrel0419/unlimited-search/blob/main/SECURITY.md)
+- [Contributing](https://github.com/flyingsquirrel0419/unlimited-search/blob/main/CONTRIBUTING.md)
+- [Code of conduct](https://github.com/flyingsquirrel0419/unlimited-search/blob/main/CODE_OF_CONDUCT.md)
+- [Disclaimer](https://github.com/flyingsquirrel0419/unlimited-search/blob/main/DISCLAIMER.md)
+- [Privacy](https://github.com/flyingsquirrel0419/unlimited-search/blob/main/PRIVACY.md)
+- [Changelog](https://github.com/flyingsquirrel0419/unlimited-search/blob/main/CHANGELOG.md)
+- [License](https://github.com/flyingsquirrel0419/unlimited-search/blob/main/LICENSE)

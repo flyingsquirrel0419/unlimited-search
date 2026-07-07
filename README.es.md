@@ -1,15 +1,15 @@
 # unlimited-search
 
-[English](README.md) | [한국어](README.ko.md) | [中文](README.zh.md) | [日本語](README.ja.md) | Español
+[English](https://github.com/flyingsquirrel0419/unlimited-search/blob/main/README.md) | [한국어](https://github.com/flyingsquirrel0419/unlimited-search/blob/main/README.ko.md) | [中文](https://github.com/flyingsquirrel0419/unlimited-search/blob/main/README.zh.md) | [日本語](https://github.com/flyingsquirrel0419/unlimited-search/blob/main/README.ja.md) | Español
 
 [![test](https://github.com/flyingsquirrel0419/unlimited-search/actions/workflows/test.yml/badge.svg)](https://github.com/flyingsquirrel0419/unlimited-search/actions/workflows/test.yml)
-[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
-[![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)](pyproject.toml)
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](https://github.com/flyingsquirrel0419/unlimited-search/blob/main/LICENSE)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://github.com/flyingsquirrel0419/unlimited-search/blob/main/pyproject.toml)
 
 <p align="center"><strong>De páginas públicas a señales utilizables.</strong></p>
 
 <p align="center">
-  <img src="assets/hero.png" width="860" alt="Imagen hero de unlimited-search mostrando URLs públicas que pasan por routes, HTTP, RSS, archives y media para convertirse en texto estructurado para MCP y CLI.">
+  <img src="https://raw.githubusercontent.com/flyingsquirrel0419/unlimited-search/main/assets/hero.png" width="860" alt="Imagen hero de unlimited-search mostrando URLs públicas que pasan por routes, HTTP, RSS, archives y media para convertirse en texto estructurado para MCP y CLI.">
 </p>
 
 `unlimited-search` es un CLI de Python y servidor MCP para leer contenido web público cuando un fetch directo normal no es suficiente. Combina rutas públicas por plataforma, identidades HTTP similares a navegador, fallbacks de contenido, fallbacks de archivos públicos y extracción de metadatos de medios en una herramienta local.
@@ -51,7 +51,7 @@ Para clientes MCP, instala el paquete y registra el servidor stdio:
 | Metadata de medios | Usa `yt-dlp --dump-json` para URLs de medios públicos sin descargar el medio. |
 | Herramientas MCP | Expone lectura de una URL, lectura batch, diagnóstico y extracción de medios a clientes MCP. |
 
-Consulta [Platform coverage](PLATFORMS.md) para la matriz completa de soporte y limitaciones conocidas.
+Consulta [Platform coverage](https://github.com/flyingsquirrel0419/unlimited-search/blob/main/PLATFORMS.md) para la matriz completa de soporte y limitaciones conocidas.
 
 ## Instalación
 
@@ -133,12 +133,12 @@ Herramientas disponibles:
 | `diagnose_access` | Devuelve un diagnóstico compacto y trace de intentos sin contenido completo. |
 | `extract_media` | Extrae metadata de medios públicos mediante `yt-dlp` sin descargar medios. |
 
-Hay más ejemplos de configuración en [MCP configuration](docs/mcp-config.md).
+Hay más ejemplos de configuración en [MCP configuration](https://github.com/flyingsquirrel0419/unlimited-search/blob/main/docs/mcp-config.md).
 
 ## Cómo Lee
 
 <p align="center">
-  <img src="assets/pipeline.png" width="860" alt="Diagrama de pipeline: Public URL a platform routes, HTTP grid, content fallbacks, archive fallbacks, media metadata y clean public text, con login, paywall o CAPTCHA deteniéndose de forma segura.">
+  <img src="https://raw.githubusercontent.com/flyingsquirrel0419/unlimited-search/main/assets/pipeline.png" width="860" alt="Diagrama de pipeline: Public URL a platform routes, HTTP grid, content fallbacks, archive fallbacks, media metadata y clean public text, con login, paywall o CAPTCHA deteniéndose de forma segura.">
 </p>
 
 `read_public_url` prueba primero las rutas públicas menos invasivas y luego amplía progresivamente las rutas de recuperación:
@@ -186,17 +186,17 @@ uv run python scripts/run_eval.py --markdown eval-results/report.md --csv eval-r
 uv run python scripts/run_eval.py --baseline eval-results/eval-20260707T000000Z.jsonl --fail-on-regression
 ```
 
-Los casos eval predeterminados están en [scripts/eval_urls.yaml](scripts/eval_urls.yaml). Sitios difíciles como NamuWiki, TikTok, Naver Search, Amazon y Google Scholar son opcionales, así que bloqueos remotos o rate limits no hacen fallar toda la ejecución.
+Los casos eval predeterminados están en [scripts/eval_urls.yaml](https://github.com/flyingsquirrel0419/unlimited-search/blob/main/scripts/eval_urls.yaml). Sitios difíciles como NamuWiki, TikTok, Naver Search, Amazon y Google Scholar son opcionales, así que bloqueos remotos o rate limits no hacen fallar toda la ejecución.
 
 ## Documentos del Proyecto
 
-- [Platform coverage](PLATFORMS.md)
-- [MCP configuration](docs/mcp-config.md)
-- [Troubleshooting](TROUBLESHOOTING.md)
-- [Security](SECURITY.md)
-- [Contributing](CONTRIBUTING.md)
-- [Code of conduct](CODE_OF_CONDUCT.md)
-- [Disclaimer](DISCLAIMER.md)
-- [Privacy](PRIVACY.md)
-- [Changelog](CHANGELOG.md)
-- [License](LICENSE)
+- [Platform coverage](https://github.com/flyingsquirrel0419/unlimited-search/blob/main/PLATFORMS.md)
+- [MCP configuration](https://github.com/flyingsquirrel0419/unlimited-search/blob/main/docs/mcp-config.md)
+- [Troubleshooting](https://github.com/flyingsquirrel0419/unlimited-search/blob/main/TROUBLESHOOTING.md)
+- [Security](https://github.com/flyingsquirrel0419/unlimited-search/blob/main/SECURITY.md)
+- [Contributing](https://github.com/flyingsquirrel0419/unlimited-search/blob/main/CONTRIBUTING.md)
+- [Code of conduct](https://github.com/flyingsquirrel0419/unlimited-search/blob/main/CODE_OF_CONDUCT.md)
+- [Disclaimer](https://github.com/flyingsquirrel0419/unlimited-search/blob/main/DISCLAIMER.md)
+- [Privacy](https://github.com/flyingsquirrel0419/unlimited-search/blob/main/PRIVACY.md)
+- [Changelog](https://github.com/flyingsquirrel0419/unlimited-search/blob/main/CHANGELOG.md)
+- [License](https://github.com/flyingsquirrel0419/unlimited-search/blob/main/LICENSE)
