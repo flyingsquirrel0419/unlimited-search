@@ -106,28 +106,3 @@ LinkedIn may return status `999`. This is treated as blocked. Do not treat it as
 Some identities return a WAF shell such as `SlardarWAF` or `Please wait...`. `unlimited-search` treats those as challenges and continues to other identities when possible.
 
 If `yt-dlp` reports an IP block for a public post, `unlimited-search` reports the failure. It does not bypass IP-based anti-abuse controls.
-
-## Private repository install fails
-
-The curl install commands require `GITHUB_TOKEN` with read access to `flyingsquirrel0419/unlimited-search`.
-
-macOS / Linux:
-
-```bash
-echo "$GITHUB_TOKEN" | wc -c
-```
-
-Windows PowerShell:
-
-```powershell
-$env:GITHUB_TOKEN.Length
-```
-
-If token access is correct but install still fails, clone with GitHub CLI:
-
-```bash
-gh repo clone flyingsquirrel0419/unlimited-search ~/.unlimited-search
-cd ~/.unlimited-search
-uv sync --no-dev
-scripts/install.sh update
-```
