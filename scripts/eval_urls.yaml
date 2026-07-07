@@ -42,6 +42,13 @@ cases:
     expect:
       stop_reason_not_in: [unsafe_url]
 
+  - id: naver_search
+    group: difficult
+    url: https://search.naver.com/search.naver?query=openai
+    required: false
+    expect:
+      stop_reason_not_in: [unsafe_url]
+
   - id: github_search
     group: search
     url: https://github.com/search?q=unlimited+search&type=repositories

@@ -83,6 +83,8 @@ def test_jina_alternate_feed_fallback_succeeds() -> None:
 
     assert result is not None
     assert result.route == "rss-discovery"
+    assert result.metadata["exact_match"] is False
+    assert result.metadata["recovery_scope"] == "site_feed"
     payload = json.loads(result.content)
     assert payload["feed"]["title"] == "Feed"
     assert payload["entries"][0]["title"] == "One"
@@ -108,6 +110,32 @@ def test_origin_feed_candidate_fallback_succeeds_without_jina_alternate() -> Non
     assert result.route == "rss-discovery"
     assert "https://example.com/feed" in transport.urls
     assert json.loads(result.content)["entries"][0]["link"] == "https://example.com/e"
+    assert result.metadata["exact_match"] is False
+    assert result.metadata["recovery_scope"] == "site_feed"
+
+
+def test_rss_fallback_marks_exact_entry_match() -> None:
+    url = "https://example.com/article"
+    jina_url = "https://r.jina.ai/https://example.com/article"
+    feed_url = "https://example.com/feed"
+    transport = FakeTransport(
+        {
+            jina_url: ResponseEnvelope(200, json.dumps({"data": {"content": ""}}), jina_url),
+            feed_url: ResponseEnvelope(
+                200,
+                "<rss><channel><title>Feed</title><item><title>Article</title><link>https://example.com/article/</link></item></channel></rss>",
+                feed_url,
+            ),
+        }
+    )
+
+    result = try_content_fallbacks(url, transport)  # type: ignore[arg-type]
+
+    assert result is not None
+    assert result.route == "rss-discovery"
+    assert result.metadata["exact_match"] is True
+    assert result.metadata["matched_entry_url"] == "https://example.com/article/"
+    assert result.metadata["recovery_scope"] == "exact_page"
 
 
 def test_metadata_salvage_extracts_ogp_and_json_ld() -> None:

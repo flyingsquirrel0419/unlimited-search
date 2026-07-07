@@ -98,3 +98,32 @@ cases:
 
     assert cases[0]["timeout"] == 3
     assert cases[0]["expect"] == {"stop_reason_not_in": ["unsafe_url"], "ok": True}
+
+
+def test_report_writers_create_markdown_and_csv(tmp_path: Path) -> None:
+    rows = [
+        {
+            "status": "pass",
+            "id": "one",
+            "group": "stable",
+            "url": "https://example.com",
+            "ok": True,
+            "verdict": "strong_ok",
+            "stop_reason": "success",
+            "platform": "example",
+            "route": "route",
+            "content_length": 42,
+            "elapsed_ms": 12,
+            "summary": "ok",
+        }
+    ]
+    markdown = tmp_path / "report.md"
+    csv_path = tmp_path / "report.csv"
+
+    run_eval.write_markdown(rows, markdown)
+    run_eval.write_csv(rows, csv_path)
+
+    assert "| pass | one | stable | example | route | strong_ok | 12 | ok |" in markdown.read_text(encoding="utf-8")
+    assert "status,id,group,url,ok,verdict,stop_reason,platform,route,content_length,elapsed_ms,summary" in csv_path.read_text(
+        encoding="utf-8"
+    )

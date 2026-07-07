@@ -383,6 +383,8 @@ def _public_route_verdict(platform: str) -> Verdict:
         "kakao",
         "chzzk",
         "soop",
+        "naver-search",
+        "amazon",
     }
     if platform in weak_platforms:
         return Verdict.WEAK_OK

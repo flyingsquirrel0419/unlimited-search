@@ -47,3 +47,23 @@ def test_jina_public_route_uses_weak_verdict(monkeypatch) -> None:  # type: igno
     assert result.ok is True
     assert result.verdict == Verdict.WEAK_OK
     assert result.trace[-1].verdict == Verdict.WEAK_OK
+
+
+def test_jina_backed_platform_route_uses_weak_verdict(monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    def fake_public_route(url, transport, *, timeout=20):  # type: ignore[no-untyped-def]
+        return PublicRouteResult(
+            "amazon",
+            True,
+            "jina-reader",
+            "Title: Product",
+            "https://r.jina.ai/https://www.amazon.com/dp/B0C7SH9D3W",
+            [PublicRouteAttempt("amazon", "jina-reader", True, status=200, bytes=14, note="ok")],
+        )
+
+    monkeypatch.setattr(reader_module, "try_public_route", fake_public_route)
+
+    result = UnlimitedSearchReader().read_public_url("https://www.amazon.com/dp/B0C7SH9D3W")
+
+    assert result.ok is True
+    assert result.verdict == Verdict.WEAK_OK
+    assert result.trace[-1].verdict == Verdict.WEAK_OK

@@ -118,6 +118,40 @@ def test_google_news_search_routes_to_rss() -> None:
     assert transport.urls == ["https://news.google.com/rss/search?q=openai&hl=en-US&gl=US&ceid=US%3Aen"]
 
 
+def test_naver_search_routes_to_jina_reader() -> None:
+    transport = FakeTransport()
+    result = try_public_route("https://search.naver.com/search.naver?query=openai", transport)  # type: ignore[arg-type]
+
+    assert result is not None
+    assert result.ok is True
+    assert result.platform == "naver-search"
+    assert result.route == "jina-reader"
+    assert transport.urls == ["https://r.jina.ai/https://search.naver.com/search.naver?query=openai"]
+
+
+def test_amazon_product_routes_to_jina_reader() -> None:
+    transport = FakeTransport()
+    result = try_public_route("https://www.amazon.com/dp/B0C7SH9D3W", transport)  # type: ignore[arg-type]
+
+    assert result is not None
+    assert result.ok is True
+    assert result.platform == "amazon"
+    assert result.route == "jina-reader"
+    assert transport.urls == ["https://r.jina.ai/https://www.amazon.com/dp/B0C7SH9D3W"]
+
+
+def test_google_scholar_adds_diagnostic_without_fetching_public_route() -> None:
+    transport = FakeTransport()
+    result = try_public_route("https://scholar.google.com/scholar?q=large+language+models", transport)  # type: ignore[arg-type]
+
+    assert result is not None
+    assert result.ok is False
+    assert result.platform == "google-scholar"
+    assert result.attempts[0].route == "automation-sensitive-diagnostic"
+    assert "rate-limits" in result.attempts[0].note
+    assert transport.urls == []
+
+
 def test_wayback_archive_routes_to_cdx() -> None:
     transport = FakeTransport()
     result = try_public_route("https://web.archive.org/web/20200101000000/https://example.com", transport)  # type: ignore[arg-type]

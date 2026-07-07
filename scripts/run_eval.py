@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 import time
 from datetime import UTC, datetime
@@ -34,6 +35,10 @@ def main(argv: list[str] | None = None) -> int:
     output_path = output_path_for(args.output)
     rows = run_cases(cases, baseline=baseline, fail_on_regression=args.fail_on_regression)
     write_jsonl(rows, output_path)
+    if args.markdown:
+        write_markdown(rows, Path(args.markdown))
+    if args.csv:
+        write_csv(rows, Path(args.csv))
     print_summary(rows, output_path)
     return 1 if any(row["status"] in {"fail", "regression"} for row in rows) else 0
 
@@ -223,6 +228,63 @@ def write_jsonl(rows: list[dict[str, Any]], path: Path) -> None:
             handle.write(json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n")
 
 
+def write_markdown(rows: list[dict[str, Any]], path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    counts: dict[str, int] = {}
+    for row in rows:
+        counts[row["status"]] = counts.get(row["status"], 0) + 1
+    lines = [
+        "# unlimited-search live eval",
+        "",
+        f"- total: {len(rows)}",
+        *[f"- {status}: {counts[status]}" for status in sorted(counts)],
+        "",
+        "| status | id | group | platform | route | verdict | ms | summary |",
+        "|---|---|---|---|---|---:|---:|---|",
+    ]
+    for row in rows:
+        lines.append(
+            "| {status} | {id} | {group} | {platform} | {route} | {verdict} | {elapsed_ms} | {summary} |".format(
+                status=_md(row["status"]),
+                id=_md(row["id"]),
+                group=_md(row["group"]),
+                platform=_md(row["platform"]),
+                route=_md(row["route"]),
+                verdict=_md(row["verdict"]),
+                elapsed_ms=row["elapsed_ms"],
+                summary=_md(row["summary"][:160]),
+            )
+        )
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def write_csv(rows: list[dict[str, Any]], path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fields = [
+        "status",
+        "id",
+        "group",
+        "url",
+        "ok",
+        "verdict",
+        "stop_reason",
+        "platform",
+        "route",
+        "content_length",
+        "elapsed_ms",
+        "summary",
+    ]
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fields)
+        writer.writeheader()
+        for row in rows:
+            writer.writerow({field: row.get(field, "") for field in fields})
+
+
+def _md(value: object) -> str:
+    return str(value).replace("|", "\\|").replace("\n", " ")
+
+
 def print_summary(rows: list[dict[str, Any]], output_path: Path) -> None:
     counts: dict[str, int] = {}
     for row in rows:
@@ -240,6 +302,8 @@ def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run live URL regression evals and write JSONL results.")
     parser.add_argument("--cases", default=str(DEFAULT_CASES), help="YAML eval case file")
     parser.add_argument("--output", help="JSONL output path; defaults to eval-results/eval-<timestamp>.jsonl")
+    parser.add_argument("--markdown", help="Optional Markdown report path")
+    parser.add_argument("--csv", help="Optional CSV report path")
     parser.add_argument("--baseline", help="Previous JSONL result to compare against")
     parser.add_argument("--fail-on-regression", action="store_true", help="Exit non-zero when baseline comparison regresses")
     parser.add_argument("--id", action="append", help="Run only a case id; can be repeated")

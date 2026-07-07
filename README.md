@@ -176,6 +176,9 @@ uv run python scripts/run_eval.py --list
 # Run the full live set and write eval-results/eval-<timestamp>.jsonl
 uv run python scripts/run_eval.py
 
+# Also write human-readable reports
+uv run python scripts/run_eval.py --markdown eval-results/report.md --csv eval-results/report.csv
+
 # Run only stable/search routes
 uv run python scripts/run_eval.py --group stable --group search
 
@@ -183,7 +186,7 @@ uv run python scripts/run_eval.py --group stable --group search
 uv run python scripts/run_eval.py --baseline eval-results/eval-20260707T000000Z.jsonl --fail-on-regression
 ```
 
-The default set lives in `scripts/eval_urls.yaml`. Difficult sites such as NamuWiki, TikTok, Amazon, and Google Scholar are marked optional so they produce warnings instead of failing the whole run when the remote site blocks or rate-limits automation.
+The default set lives in `scripts/eval_urls.yaml`. Difficult sites such as NamuWiki, TikTok, Naver Search, Amazon, and Google Scholar are marked optional so they produce warnings instead of failing the whole run when the remote site blocks or rate-limits automation.
 
 ## Project Docs
 

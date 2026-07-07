@@ -50,6 +50,13 @@ def try_public_route(url: str, transport: PublicTransport, *, timeout: int = 20)
         return _x(url, transport, timeout=timeout)
     if platform == "media":
         return _media(url, _detect_media_platform(url) or "media", timeout=timeout)
+    if _normalized_host(url) in {"scholar.google.com", "scholar.google.co.kr"}:
+        return _diagnostic_route(
+            "google-scholar",
+            "automation-sensitive-diagnostic",
+            url,
+            "Google Scholar frequently rate-limits automated access; the generic fetch result is diagnostic, not bypass evidence.",
+        )
 
     api_plan = _api_plan(url)
     if api_plan is not None:
@@ -328,6 +335,12 @@ def _api_plan(url: str) -> tuple[str, list[tuple[str, str]]] | None:
             ],
         )
 
+    if host in {"search.naver.com", "m.search.naver.com"}:
+        return ("naver-search", [("jina-reader", jina_reader_url(url))])
+
+    if host.endswith("amazon.com") and ("/dp/" in split.path or "/gp/product/" in split.path):
+        return ("amazon", [("jina-reader", jina_reader_url(url))])
+
     if _should_use_jina(url):
         return ("jina-reader", [("reader", jina_reader_url(url))])
 
@@ -401,6 +414,17 @@ def _google_news_search_url(search: str, query: dict[str, list[str]]) -> str:
         "ceid": query.get("ceid", ["US:en"])[0],
     }
     return "https://news.google.com/rss/search?" + urlencode(params)
+
+
+def _diagnostic_route(platform: str, route: str, url: str, note: str) -> PublicRouteResult:
+    return PublicRouteResult(
+        platform,
+        False,
+        route=None,
+        final_url=url,
+        attempts=[PublicRouteAttempt(platform, route, False, note=note)],
+        metadata={"diagnostic": note},
+    )
 
 
 def _normalized_host(url: str) -> str:

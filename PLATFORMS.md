@@ -35,6 +35,9 @@ These source URLs are converted to public API or feed URLs before the generic fe
 | PyPI | `pypi.org/project/{package}` | PyPI JSON |
 | Wayback | archived `web.archive.org/web/.../{url}` URLs | CDX API |
 | Naver Blog | `blog.naver.com/{blogId}/{logNo}` | mobile blog post URL |
+| Naver Search | `search.naver.com/search.naver?query=...` | Jina Reader route |
+| Amazon | product URLs with `/dp/` or `/gp/product/` | Jina Reader route |
+| Google Scholar | `scholar.google.com/scholar?...` | automation-sensitive diagnostic, then generic fetch |
 | Jina Reader fallback | Medium, Substack, Naver News, Naver Finance pages | `r.jina.ai` reader |
 
 ## Media Routes
@@ -75,6 +78,7 @@ Fallback success is reported as:
 - `metadata.route = "jina-json"`, `"rss-discovery"`, or `"metadata-salvage"`
 - `metadata.content_type = "markdown"`, `"feed_json"`, or `"metadata_json"`
 - `metadata.fallback_verdict = "weak_ok"` for content recovery or `"suspect_ok"` for metadata-only salvage
+- RSS fallback includes `metadata.recovery_scope = "exact_page"` when a feed entry matches the original URL, otherwise `"site_feed"`.
 
 `--max-attempts 0` skips the generic HTTP grid and is useful for fallback smoke tests.
 

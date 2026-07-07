@@ -95,6 +95,7 @@ def try_content_fallbacks(
         ok = feed is not None
         attempts.append(_attempt("rss-discovery", feed_url, ok, feed_response, feed_result.error))
         if ok and feed is not None:
+            match = _feed_match(url, feed)
             content = json.dumps(feed, ensure_ascii=False, indent=2)
             return ContentFallbackResult(
                 True,
@@ -103,7 +104,12 @@ def try_content_fallbacks(
                 feed_url,
                 "feed_json",
                 attempts,
-                metadata={"entry_count": len(feed.get("entries", []))},
+                metadata={
+                    "entry_count": len(feed.get("entries", [])),
+                    "exact_match": match["exact_match"],
+                    "matched_entry_url": match["matched_entry_url"],
+                    "recovery_scope": "exact_page" if match["exact_match"] else "site_feed",
+                },
             )
 
     metadata_source = last_response
@@ -193,6 +199,24 @@ def _feed_candidate_urls(url: str) -> list[str]:
         urljoin(origin, "/rss.xml"),
         urljoin(origin, "/index.xml"),
     ]
+
+
+def _feed_match(original_url: str, feed: dict[str, Any]) -> dict[str, object]:
+    original = _canonical_url(original_url)
+    for entry in feed.get("entries", []):
+        if not isinstance(entry, dict):
+            continue
+        link = str(entry.get("link") or "")
+        if link and _canonical_url(link) == original:
+            return {"exact_match": True, "matched_entry_url": link}
+    return {"exact_match": False, "matched_entry_url": ""}
+
+
+def _canonical_url(url: str) -> str:
+    split = urlsplit(url)
+    path = split.path.rstrip("/") or "/"
+    query = f"?{split.query}" if split.query else ""
+    return f"{split.scheme.lower()}://{(split.netloc or '').lower()}{path}{query}"
 
 
 def _parse_feed(text: str, source_url: str) -> dict[str, Any] | None:
